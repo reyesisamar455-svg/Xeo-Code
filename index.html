@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Exptil-Code - Lua [BETA]</title>
+    
+       <link rel="icon" type="image/png" href="logo.png">
+    
+    <style>
+        :root {
+            --vs-bg: #1e1e1e;
+            --vs-side: #252526;
+            --vs-header: #3c3c3c;
+            --vs-accent: #007acc;
+            --vs-console: #1e1e1e;
+            --vs-text: #cccccc;
+        }
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--vs-bg);
+            color: var(--vs-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            height: 100%; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        header {
+            background: var(--vs-side); padding: 8px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #2b2b2b; height: 45px;
+        }
+        h1 { color: #ffffff; margin: 0; font-size: 1rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+        .file-tab {
+            background: var(--vs-bg); color: #ffffff; padding: 6px 20px;
+            font-size: 0.85rem; border-top: 2px solid var(--vs-accent);
+            display: inline-block; margin-left: 10px; border-radius: 4px 4px 0 0;
+        }
+        .btn-run {
+            background-color: #388a34; color: #ffffff;
+            border: none; padding: 6px 16px; font-size: 0.85rem;
+            font-weight: normal; border-radius: 3px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-run:hover { background-color: #43a047; }
+        .btn-run:active { background-color: #2e7d32; }
+        
+        .main-layout { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+        #editor-container { flex: 3; width: 100%; background: var(--vs-bg); overflow: hidden; }
+        
+        /* Consola Terminal / Output Estilo VS Code */
+        .console-box { 
+            flex: 1.5; background: var(--vs-console); display: flex; 
+            flex-direction: column; overflow: hidden; border-top: 1px solid #3c3c3c; 
+        }
+        .console-title { 
+            background: var(--vs-side); padding: 0 15px; font-size: 0.75rem; 
+            color: #717171; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;
+            display: flex; gap: 20px; border-bottom: 1px solid #2b2b2b; height: 35px; align-items: center;
+        }
+        .console-tab {
+            cursor: pointer; padding: 8px 0; height: 100%; display: flex; align-items: center;
+            transition: color 0.2s;
+        }
+        .console-tab:hover { color: #ffffff; }
+        .tab-active { color: #ffffff !important; border-bottom: 2px solid var(--vs-accent); }
+        
+        /* Contenedores de Texto */
+        .panel-text {
+            display: none; flex: 1; padding: 12px; margin: 0; 
+            font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; 
+            overflow-y: auto; white-space: pre-wrap;
+        }
+        #output { color: #47d476; display: block; } /* Activo por defecto */
+        #terminal-log { color: #ffffff; }
+        .err { color: #f14c4c !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Exptil-Code <span class="file-tab">main.lua</span></h1>
+        <button class="btn-run" onclick="ejecutarLua()">Run Code ▶</button>
+    </header>
+
+    <div class="main-layout">
+        <div id="editor-container"></div>
+        
+        <!-- Panel Dividido Interactivo -->
+        <div class="console-box">
+            <div class="console-title">
+                <span class="console-tab tab-active" id="btn-terminal" onclick="cambiarPestaña('terminal')">Terminal</span>
+                <span class="console-tab" id="btn-output" onclick="cambiarPestaña('output')">Output</span>
+            </div>
+            <!-- Logs independientes -->
+            <pre class="panel-text" id="terminal-log">OysterCode Environment [Version 1.0.0-BETA]&#10;(c) OysterCode Corporation. Escribe tu script de Lua arriba...</pre>
+            <pre class="panel-text" id="output">Presione 'Run Code' para compilar el script...</pre>
+        </div>
+    </div>
+
+    <script type="module">
+        const p1 = "https://cdn.js" + "delivr.net/npm/fengari-web@0.1.4/dist/fengari-web.js";
+        const p2 = "https://cdn.js" + "delivr.net/npm/monaco-editor@0.43.0/+esm";
+
+        function cargarScript(src) {
+            return new Promise((resolve) => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = resolve;
+                document.head.appendChild(s);
+            });
+        }
+
+        async function iniciarEntorno() {
+            await cargarScript(p1);
+            const monaco = await import(p2);
+
+            window.editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: `print("Hola mundo")`,
+                language: 'lua',
+                theme: 'vs-dark',
+                automaticLayout: true, 
+                fontSize: 15,
+                minimap: { enabled: false },
+                
+                quickSuggestions: { 
+                    other: true,       // Activo para código Lua normal
+                    comments: false,   // APAGADO dentro de comentarios (-- )
+                    strings: false     // APAGADO dentro de comillas de texto ("" o '')
+                },
+                wordBasedSuggestions: false,
+                suggest: {
+                    showIcons: false // Oculta los iconos que se ven como cajas rotas en el celular
+                },
+                suggestOnTriggerCharacters: true,
+                acceptSuggestionOnEnter: "on",
+                tabCompletion: "on",
+                wordBasedSuggestions: true,
+                autoClosingBrackets: "always",
+                autoClosingQuotes: "always",
+                
+                cursorBlinking: "blink",
+                cursorSmoothCaretAnimation: "on",
+                lineNumbers: "on",
+                wordWrap: "on", 
+                roundedSelection: true,
+                scrollbar: { vertical: 'visible', horizontal: 'visible' }
+            });
+            
+            document.getElementById("output").innerText = "Entorno listo. Escribe tu código y presiona 'Run Code'.";
+        }
+
+        iniciarEntorno();
+    </script>
+
+    <script>
+        const outPanel = document.getElementById("output");
+        const termPanel = document.getElementById("terminal-log");
+        const btnTerm = document.getElementById("btn-terminal");
+        const btnOut = document.getElementById("btn-output");
+
+        // LÓGICA DE CONTROL DE PESTAÑAS INTERACTIVAS
+        function cambiarPestaña(tipo) {
+            if (tipo === 'terminal') {
+                termPanel.style.display = "block";
+                outPanel.style.display = "none";
+                btnTerm.classList.add("tab-active");
+                btnOut.classList.remove("tab-active");
+            } else {
+                outPanel.style.display = "block";
+                termPanel.style.display = "none";
+                btnOut.classList.add("tab-active");
+                btnTerm.classList.remove("tab-active");
+            }
+        }
+
+        // MOTOR DE EJECUCIÓN LUA
+        function ejecutarLua() {
+            outPanel.innerHTML = "";
+            outPanel.classList.remove("err");
+            termPanel.classList.remove("err");
+            
+            if (typeof fengari === 'undefined') {
+                outPanel.classList.add("err");
+                outPanel.innerText = "⏳ El motor de Lua se está cargando. Espera un momento.";
+                cambiarPestaña('output');
+                return;
+            }
+
+            if (!window.editor) {
+                outPanel.classList.add("err");
+                outPanel.innerText = "🚨 El editor de código aún no ha terminado de renderizarse.";
+                cambiarPestaña('output');
+                return;
+            }
+
+            let impresiones = [];
+            window.print = function(...args) { impresiones.push(args.join("\t")); };
+
+            const codigoActual = window.editor.getValue();
+
+            const scriptPuente = `
+                local js = require "js"
+                function print(...)
+                    local t = {...}
+                    for i=1, #t do t[i] = tostring(t[i]) end
+                    js.global:print(table.unpack(t))
+                end
+                ${codigoActual}
+            `;
+
+            try {
+                fengari.load(scriptPuente)();
+                
+                // Imprimir salidas normales en la pestaña Terminal como lo hace VS Code
+                termPanel.innerText = impresiones.length > 0 ? impresiones.join("\n") : "Script executed successfully.";
+                outPanel.innerText = "[Done] exited with code=0 in 0.045 seconds.";
+                cambiarPestaña('terminal'); // Focar automáticamente los resultados
+            } catch (error) {
+                termPanel.classList.add("err");
+                termPanel.innerText = "🚨 Lua Syntax Error:\n" + error.message;
+                outPanel.classList.add("err");
+                outPanel.innerText = "[Done] exited with error code=1.";
+                cambiarPestaña('terminal');
+            }
+        }
+    </script>
+</body>
+</html>
+

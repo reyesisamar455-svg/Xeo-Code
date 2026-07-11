@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explorador de Archivos Virtual con Ejecución</title>
+    <title>PXS - Explorador de Archivos Virtual</title>
     <style>
         * {
             box-sizing: border-box;
@@ -25,12 +25,35 @@
             display: flex;
             flex-direction: column;
         }
+        #brand-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #29292e;
+            background-color: #141416;
+        }
+        #logo {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: #00875f;
+            text-shadow: 0 0 10px rgba(0, 135, 95, 0.3);
+        }
+        #sidebar-title {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #8d8d99;
+        }
         #toolbar {
             padding: 10px;
             display: flex;
             gap: 6px;
             border-bottom: 1px solid #29292e;
-            background-color: #141416;
+            background-color: #16161a;
+            flex-wrap: wrap;
         }
         .btn {
             background-color: #29292e;
@@ -42,6 +65,9 @@
             font-size: 12px;
             font-weight: 500;
             transition: background 0.2s;
+            flex: 1;
+            text-align: center;
+            min-width: 70px;
         }
         .btn:hover {
             background-color: #3a3a42;
@@ -156,6 +182,10 @@
 <body>
 
     <div id="sidebar">
+        <div id="brand-header">
+            <div id="logo">PXS</div>
+            <div id="sidebar-title">Workspace</div>
+        </div>
         <div id="toolbar">
             <button class="btn" onclick="createNewElement('file')">+ Archivo</button>
             <button class="btn" onclick="createNewElement('folder')">+ Carpeta</button>
@@ -168,10 +198,10 @@
     <div id="main-container">
         <div id="editor-container">
             <div id="tab-bar">Ningún archivo seleccionado</div>
-            <textarea id="code-editor" readonly placeholder="Selecciona o crea un archivo para comenzar..."></textarea>
+            <textarea id="code-editor" readonly placeholder="Selecciona o crea un archivo para comenzar a programar en PXS..."></textarea>
         </div>
         <div id="preview-panel">
-            <div id="preview-title">Consola / Vista Previa de Ejecución</div>
+            <div id="preview-title">Consola / Ejecución en Vivo</div>
             <iframe id="preview-frame"></iframe>
         </div>
     </div>
@@ -181,7 +211,7 @@
         const iconFileUrl = "https://www.svgrepo.com/show/530516/document.svg";
 
         let virtualFS = {
-            "index.html": { type: "file", content: "<!DOCTYPE html>\n<html>\n<body>\n  <h1>Proyecto Virtual</h1>\n  <p>Prueba a escribir código y pulsar Play.</p>\n  <script>\n    console.log('¡Hola desde el entorno virtual!');\n    alert('Código ejecutado');\n  </" + "script>\n</body>\n</html>" }
+            "index.html": { type: "file", content: "<!DOCTYPE html>\n<html>\n<body>\n  <h1>Entorno PXS</h1>\n  <p>Edita este archivo y haz clic en Play para ver los cambios abajo.</p>\n  <script>\n    console.log('Entorno PXS inicializado correctamente.');\n  <\/script>\n</body>\n</html>" }
         };
 
         let selectedPath = null;
@@ -266,8 +296,8 @@
         }
 
         function createNewElement(type) {
-            let defaultName = type === "file" ? "nuevo_archivo.html" : "nueva_carpeta";
-            let name = prompt(`Introduce el nombre del nuevo ${type === 'file' ? 'archivo' : 'carpeta'}:`, defaultName);
+            let defaultName = type === "file" ? "index.html" : "nueva_carpeta";
+            let name = prompt(`Nombre del nuevo ${type === 'file' ? 'archivo' : 'carpeta'}:`, defaultName);
             
             if (!name) return;
 
@@ -285,13 +315,13 @@
             }
 
             if (virtualFS[path]) {
-                alert("Ya existe un elemento con esa ruta.");
+                alert("Este elemento ya existe en la ruta.");
                 return;
             }
 
             virtualFS[path] = {
                 type: type,
-                content: type === "file" ? "<!-- Código fuente -->" : undefined
+                content: type === "file" ? "<!-- Desarrollado en PXS -->" : undefined
             };
 
             refreshTree();
@@ -299,11 +329,11 @@
 
         function deleteSelectedElement() {
             if (!selectedPath) {
-                alert("Por favor, selecciona un archivo o carpeta para eliminar.");
+                alert("Selecciona un archivo o carpeta en el explorador para borrar.");
                 return;
             }
 
-            if (confirm(`¿Estás seguro de que quieres eliminar '${selectedPath}'?`)) {
+            if (confirm(`¿Eliminar definitivamente '${selectedPath}'?`)) {
                 for (let path in virtualFS) {
                     if (path === selectedPath || path.startsWith(selectedPath + "/")) {
                         delete virtualFS[path];
@@ -324,27 +354,16 @@
 
         function runCode() {
             if (!currentOpenPath) {
-                alert("Abre un archivo para poder ejecutar su código.");
+                alert("Abre un archivo para ejecutar su contenido.");
                 return;
             }
             
-            // Sincronizar el contenido actual del editor
             virtualFS[currentOpenPath].content = codeEditor.value;
             let code = codeEditor.value;
 
-            // Inyección básica para capturar logs de consola del iframe y verlos en alertas o la ventana integrada
-            let injection = `
-                <script>
-                    const _log = console.log;
-                    console.log = function(...args) {
-                        _log(...args);
-                    };
-                <\/script>
-            `;
-
             let doc = previewFrame.contentWindow.document;
             doc.open();
-            doc.write(injection + code);
+            doc.write(code);
             doc.close();
         }
 
@@ -354,7 +373,6 @@
             }
         });
 
-        // Inicialización inicial
         refreshTree();
     </script>
 </body>

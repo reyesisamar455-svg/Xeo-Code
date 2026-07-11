@@ -2,228 +2,360 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Xeo-Code - Lua [BETA]</title>
-    
-    <link rel="icon" type="image/png" href="logo9.png">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de Archivos Virtual con Ejecución</title>
     <style>
-        :root {
-            --vs-bg: #1e1e1e;
-            --vs-side: #252526;
-            --vs-header: #3c3c3c;
-            --vs-accent: #007acc;
-            --vs-console: #1e1e1e;
-            --vs-text: #cccccc;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-        * { box-sizing: border-box; }
-        body, html {
-            margin: 0; padding: 0;
-            background-color: var(--vs-bg);
-            color: var(--vs-text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            height: 100%; overflow: hidden;
-            display: flex; flex-direction: column;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121214;
+            color: #e1e1e6;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
-        header {
-            background: var(--vs-side); padding: 8px 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #2b2b2b; height: 45px;
+        #sidebar {
+            width: 280px;
+            background-color: #1a1a1e;
+            border-right: 1px solid #29292e;
+            display: flex;
+            flex-direction: column;
         }
-        h1 { color: #ffffff; margin: 0; font-size: 1rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
-        .file-tab {
-            background: var(--vs-bg); color: #ffffff; padding: 6px 20px;
-            font-size: 0.85rem; border-top: 2px solid var(--vs-accent);
-            display: inline-block; margin-left: 10px; border-radius: 4px 4px 0 0;
+        #toolbar {
+            padding: 10px;
+            display: flex;
+            gap: 6px;
+            border-bottom: 1px solid #29292e;
+            background-color: #141416;
         }
-        .btn-run {
-            background-color: #388a34; color: #ffffff;
-            border: none; padding: 6px 16px; font-size: 0.85rem;
-            font-weight: normal; border-radius: 3px; cursor: pointer;
+        .btn {
+            background-color: #29292e;
+            color: #e1e1e6;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
             transition: background 0.2s;
         }
-        .btn-run:hover { background-color: #43a047; }
-        .btn-run:active { background-color: #2e7d32; }
-        
-        .main-layout { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-        #editor-container { flex: 3; width: 100%; background: var(--vs-bg); overflow: hidden; }
-        
-        /* Consola Terminal / Output Estilo VS Code */
-        .console-box { 
-            flex: 1.5; background: var(--vs-console); display: flex; 
-            flex-direction: column; overflow: hidden; border-top: 1px solid #3c3c3c; 
+        .btn:hover {
+            background-color: #3a3a42;
         }
-        .console-title { 
-            background: var(--vs-side); padding: 0 15px; font-size: 0.75rem; 
-            color: #717171; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;
-            display: flex; gap: 20px; border-bottom: 1px solid #2b2b2b; height: 35px; align-items: center;
+        .btn-play {
+            background-color: #00875f;
+            color: white;
         }
-        .console-tab {
-            cursor: pointer; padding: 8px 0; height: 100%; display: flex; align-items: center;
-            transition: color 0.2s;
+        .btn-play:hover {
+            background-color: #00a372;
         }
-        .console-tab:hover { color: #ffffff; }
-        .tab-active { color: #ffffff !important; border-bottom: 2px solid var(--vs-accent); }
-        
-        /* Contenedores de Texto */
-        .panel-text {
-            display: none; flex: 1; padding: 12px; margin: 0; 
-            font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; 
-            overflow-y: auto; white-space: pre-wrap;
+        .btn-delete {
+            background-color: #c73636;
+            color: white;
         }
-        #output { color: #47d476; display: block; } /* Activo por defecto */
-        #terminal-log { color: #ffffff; }
-        .err { color: #f14c4c !important; }
+        .btn-delete:hover {
+            background-color: #e04242;
+        }
+        #file-tree {
+            flex: 1;
+            padding: 12px;
+            overflow-y: auto;
+        }
+        .tree-node {
+            margin-left: 14px;
+            user-select: none;
+        }
+        .node-element {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .node-element:hover {
+            background-color: #29292e;
+        }
+        .node-element.active {
+            background-color: #202024;
+            border-left: 3px solid #00875f;
+        }
+        .node-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .node-icon {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+        }
+        #main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        #editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #121214;
+        }
+        #tab-bar {
+            height: 45px;
+            background-color: #1a1a1e;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            border-bottom: 1px solid #29292e;
+            font-size: 14px;
+            color: #c4c4cc;
+        }
+        #code-editor {
+            flex: 1;
+            width: 100%;
+            background-color: #121214;
+            color: #e1e1e6;
+            border: none;
+            padding: 20px;
+            font-family: "Fira Code", Consolas, Monaco, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+        #preview-panel {
+            height: 35%;
+            background-color: #1a1a1e;
+            border-top: 2px solid #29292e;
+            display: flex;
+            flex-direction: column;
+        }
+        #preview-title {
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #8d8d99;
+            background-color: #141416;
+            border-bottom: 1px solid #29292e;
+        }
+        #preview-frame {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background-color: #ffffff;
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Xeo-Code <span class="file-tab">main.lua</span></h1>
-        <button class="btn-run" onclick="ejecutarLua()">Run Code ▶</button>
-    </header>
+    <div id="sidebar">
+        <div id="toolbar">
+            <button class="btn" onclick="createNewElement('file')">+ Archivo</button>
+            <button class="btn" onclick="createNewElement('folder')">+ Carpeta</button>
+            <button class="btn btn-delete" onclick="deleteSelectedElement()">Eliminar</button>
+            <button class="btn btn-play" onclick="runCode()">▶ Play</button>
+        </div>
+        <div id="file-tree"></div>
+    </div>
 
-    <div class="main-layout">
-        <div id="editor-container"></div>
-        
-        <!-- Panel Dividido Interactivo -->
-        <div class="console-box">
-            <div class="console-title">
-                <span class="console-tab tab-active" id="btn-terminal" onclick="cambiarPestaña('terminal')">Terminal</span>
-                <span class="console-tab" id="btn-output" onclick="cambiarPestaña('output')">Output</span>
-            </div>
-            <!-- Logs independientes -->
-            <pre class="panel-text" id="terminal-log">Xeo-Code Environment [Version 1.0.0-BETA]&#10;(c) Xeo-Code Corporation. Escribe tu script de Lua arriba...</pre>
-            <pre class="panel-text" id="output">Presione 'Run Code' para compilar el script...</pre>
+    <div id="main-container">
+        <div id="editor-container">
+            <div id="tab-bar">Ningún archivo seleccionado</div>
+            <textarea id="code-editor" readonly placeholder="Selecciona o crea un archivo para comenzar..."></textarea>
+        </div>
+        <div id="preview-panel">
+            <div id="preview-title">Consola / Vista Previa de Ejecución</div>
+            <iframe id="preview-frame"></iframe>
         </div>
     </div>
 
-    <script type="module">
-        const p1 = "https://cdn.js" + "delivr.net/npm/fengari-web@0.1.4/dist/fengari-web.js";
-        const p2 = "https://cdn.js" + "delivr.net/npm/monaco-editor@0.43.0/+esm";
-
-        function cargarScript(src) {
-            return new Promise((resolve) => {
-                const s = document.createElement('script');
-                s.src = src;
-                s.onload = resolve;
-                document.head.appendChild(s);
-            });
-        }
-
-        async function iniciarEntorno() {
-            await cargarScript(p1);
-            const monaco = await import(p2);
-
-            window.editor = monaco.editor.create(document.getElementById('editor-container'), {
-                value: `print("Hola mundo")`,
-                language: 'lua',
-                theme: 'vs-dark',
-                automaticLayout: true, 
-                fontSize: 15,
-                minimap: { enabled: false },
-                
-                quickSuggestions: { 
-                    other: true,       // Activo para código Lua normal
-                    comments: false,   // APAGADO dentro de comentarios (-- )
-                    strings: false     // APAGADO dentro de comillas de texto ("" o '')
-                },
-                wordBasedSuggestions: false,
-                suggest: {
-                    showIcons: false // Oculta los iconos que se ven como cajas rotas en el celular
-                },
-                suggestOnTriggerCharacters: true,
-                acceptSuggestionOnEnter: "on",
-                tabCompletion: "on",
-                wordBasedSuggestions: true,
-                autoClosingBrackets: "always",
-                autoClosingQuotes: "always",
-                
-                cursorBlinking: "blink",
-                cursorSmoothCaretAnimation: "on",
-                lineNumbers: "on",
-                wordWrap: "on", 
-                roundedSelection: true,
-                scrollbar: { vertical: 'visible', horizontal: 'visible' }
-            });
-            
-            document.getElementById("output").innerText = "Entorno listo. Escribe tu código y presiona 'Run Code'.";
-        }
-
-        iniciarEntorno();
-    </script>
-
     <script>
-        const outPanel = document.getElementById("output");
-        const termPanel = document.getElementById("terminal-log");
-        const btnTerm = document.getElementById("btn-terminal");
-        const btnOut = document.getElementById("btn-output");
+        const iconFolderUrl = "https://www.svgrepo.com/show/530518/folder.svg";
+        const iconFileUrl = "https://www.svgrepo.com/show/530516/document.svg";
 
-        // LÓGICA DE CONTROL DE PESTAÑAS INTERACTIVAS
-        function cambiarPestaña(tipo) {
-            if (tipo === 'terminal') {
-                termPanel.style.display = "block";
-                outPanel.style.display = "none";
-                btnTerm.classList.add("tab-active");
-                btnOut.classList.remove("tab-active");
-            } else {
-                outPanel.style.display = "block";
-                termPanel.style.display = "none";
-                btnOut.classList.add("tab-active");
-                btnTerm.classList.remove("tab-active");
+        let virtualFS = {
+            "index.html": { type: "file", content: "<!DOCTYPE html>\n<html>\n<body>\n  <h1>Proyecto Virtual</h1>\n  <p>Prueba a escribir código y pulsar Play.</p>\n  <script>\n    console.log('¡Hola desde el entorno virtual!');\n    alert('Código ejecutado');\n  </" + "script>\n</body>\n</html>" }
+        };
+
+        let selectedPath = null;
+        let currentOpenPath = null;
+        
+        const fileTreeContainer = document.getElementById("file-tree");
+        const tabBar = document.getElementById("tab-bar");
+        const codeEditor = document.getElementById("code-editor");
+        const previewFrame = document.getElementById("preview-frame");
+
+        function buildTree(fs) {
+            let root = {};
+            for (let path in fs) {
+                let parts = path.split('/');
+                let current = root;
+                for (let i = 0; i < parts.length; i++) {
+                    let part = parts[i];
+                    if (!current[part]) {
+                        current[part] = { _meta: i === parts.length - 1 ? fs[path] : { type: "folder" }, _children: {} };
+                    }
+                    current = current[part]._children;
+                }
+            }
+            return root;
+        }
+
+        function renderTree(tree, container, currentPath = "") {
+            for (let key in tree) {
+                let node = tree[key]._meta;
+                let children = tree[key]._children;
+                let fullPath = currentPath ? `${currentPath}/${key}` : key;
+
+                let div = document.createElement("div");
+                div.className = "tree-node";
+
+                let element = document.createElement("div");
+                element.className = "node-element";
+                if (selectedPath === fullPath) element.classList.add("active");
+                
+                const iconSrc = node.type === 'folder' ? iconFolderUrl : iconFileUrl;
+                const iconHtml = `<img src="${iconSrc}" class="node-icon" alt="${node.type}">`;
+
+                element.innerHTML = `<div class="node-info">${iconHtml}<span>${key}</span></div>`;
+
+                element.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    selectElement(fullPath, element, node.type);
+                });
+
+                div.appendChild(element);
+
+                if (Object.keys(children).length > 0) {
+                    let childrenContainer = document.createElement("div");
+                    renderTree(children, childrenContainer, fullPath);
+                    div.appendChild(childrenContainer);
+                }
+
+                container.appendChild(div);
             }
         }
 
-        // MOTOR DE EJECUCIÓN LUA
-        function ejecutarLua() {
-            outPanel.innerHTML = "";
-            outPanel.classList.remove("err");
-            termPanel.classList.remove("err");
+        function refreshTree() {
+            fileTreeContainer.innerHTML = "";
+            const structuredTree = buildTree(virtualFS);
+            renderTree(structuredTree, fileTreeContainer);
+        }
+
+        function selectElement(path, element, type) {
+            document.querySelectorAll(".node-element").forEach(el => el.classList.remove("active"));
+            element.classList.add("active");
+            selectedPath = path;
+
+            if (type === "file") {
+                if (currentOpenPath) {
+                    virtualFS[currentOpenPath].content = codeEditor.value;
+                }
+                currentOpenPath = path;
+                tabBar.textContent = path;
+                codeEditor.value = virtualFS[path].content;
+                codeEditor.removeAttribute("readonly");
+            }
+        }
+
+        function createNewElement(type) {
+            let defaultName = type === "file" ? "nuevo_archivo.html" : "nueva_carpeta";
+            let name = prompt(`Introduce el nombre del nuevo ${type === 'file' ? 'archivo' : 'carpeta'}:`, defaultName);
             
-            if (typeof fengari === 'undefined') {
-                outPanel.classList.add("err");
-                outPanel.innerText = "⏳ El motor de Lua se está cargando. Espera un momento.";
-                cambiarPestaña('output');
+            if (!name) return;
+
+            let path = name;
+            if (selectedPath) {
+                if (virtualFS[selectedPath] && virtualFS[selectedPath].type === "folder") {
+                    path = `${selectedPath}/${name}`;
+                } else {
+                    let parts = selectedPath.split('/');
+                    parts.pop();
+                    if (parts.length > 0) {
+                        path = `${parts.join('/')}/${name}`;
+                    }
+                }
+            }
+
+            if (virtualFS[path]) {
+                alert("Ya existe un elemento con esa ruta.");
                 return;
             }
 
-            if (!window.editor) {
-                outPanel.classList.add("err");
-                outPanel.innerText = "🚨 El editor de código aún no ha terminado de renderizarse.";
-                cambiarPestaña('output');
+            virtualFS[path] = {
+                type: type,
+                content: type === "file" ? "<!-- Código fuente -->" : undefined
+            };
+
+            refreshTree();
+        }
+
+        function deleteSelectedElement() {
+            if (!selectedPath) {
+                alert("Por favor, selecciona un archivo o carpeta para eliminar.");
                 return;
             }
 
-            let impresiones = [];
-            window.print = function(...args) { impresiones.push(args.join("\t")); };
+            if (confirm(`¿Estás seguro de que quieres eliminar '${selectedPath}'?`)) {
+                for (let path in virtualFS) {
+                    if (path === selectedPath || path.startsWith(selectedPath + "/")) {
+                        delete virtualFS[path];
+                    }
+                }
 
-            const codigoActual = window.editor.getValue();
+                if (currentOpenPath && (currentOpenPath === selectedPath || currentOpenPath.startsWith(selectedPath + "/"))) {
+                    currentOpenPath = null;
+                    tabBar.textContent = "Ningún archivo seleccionado";
+                    codeEditor.value = "";
+                    codeEditor.setAttribute("readonly", "true");
+                }
 
-            const scriptPuente = `
-                local js = require "js"
-                function print(...)
-                    local t = {...}
-                    for i=1, #t do t[i] = tostring(t[i]) end
-                    js.global:print(table.unpack(t))
-                end
-                ${codigoActual}
+                selectedPath = null;
+                refreshTree();
+            }
+        }
+
+        function runCode() {
+            if (!currentOpenPath) {
+                alert("Abre un archivo para poder ejecutar su código.");
+                return;
+            }
+            
+            // Sincronizar el contenido actual del editor
+            virtualFS[currentOpenPath].content = codeEditor.value;
+            let code = codeEditor.value;
+
+            // Inyección básica para capturar logs de consola del iframe y verlos en alertas o la ventana integrada
+            let injection = `
+                <script>
+                    const _log = console.log;
+                    console.log = function(...args) {
+                        _log(...args);
+                    };
+                <\/script>
             `;
 
-            try {
-                fengari.load(scriptPuente)();
-                
-                // Imprimir salidas normales en la pestaña Terminal como lo hace VS Code
-                termPanel.innerText = impresiones.length > 0 ? impresiones.join("\n") : "Script executed successfully.";
-                outPanel.innerText = "[Done] exited with code=0 in 0.045 seconds.";
-                cambiarPestaña('terminal'); // Focar automáticamente los resultados
-            } catch (error) {
-                termPanel.classList.add("err");
-                termPanel.innerText = "🚨 Lua Syntax Error:\n" + error.message;
-                outPanel.classList.add("err");
-                outPanel.innerText = "[Done] exited with error code=1.";
-                cambiarPestaña('terminal');
-            }
+            let doc = previewFrame.contentWindow.document;
+            doc.open();
+            doc.write(injection + code);
+            doc.close();
         }
+
+        codeEditor.addEventListener("input", () => {
+            if (currentOpenPath) {
+                virtualFS[currentOpenPath].content = codeEditor.value;
+            }
+        });
+
+        // Inicialización inicial
+        refreshTree();
     </script>
 </body>
 </html>

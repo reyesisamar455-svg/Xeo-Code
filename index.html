@@ -4,16 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PXS - Explorador de Archivos Virtual</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
+
+        :root {
+            --primary-color: #00875f;
+            --primary-hover: #00a372;
+            --bg-dark: #0d0d12;
+            --bg-secondary: #16161b;
+            --bg-tertiary: #1f1f26;
+            --border-color: #2a2a32;
+            --text-primary: #e8e8ee;
+            --text-secondary: #a0a0a8;
+            --danger-color: #d43f3f;
+            --danger-hover: #e04242;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121214;
-            color: #e1e1e6;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
             display: flex;
             height: 100vh;
             overflow: hidden;
@@ -25,14 +40,15 @@
                 flex-direction: row;
             }
             #sidebar {
-                width: 280px;
-                background-color: #1a1a1e;
-                border-right: 1px solid #29292e;
+                width: 300px;
+                background-color: var(--bg-secondary);
+                border-right: 1px solid var(--border-color);
                 display: flex;
                 flex-direction: column;
                 position: static;
                 height: 100vh;
                 transform: translateX(0);
+                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
             }
             #sidebar.open {
                 transform: translateX(0);
@@ -42,12 +58,19 @@
             }
             #main-container {
                 flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+            #editor-container {
+                flex: 1;
+                min-height: 0;
             }
             #code-editor {
                 padding: 20px;
             }
             #preview-panel {
-                height: 35%;
+                height: 40%;
+                min-height: 200px;
             }
             .btn {
                 flex: 1;
@@ -64,16 +87,17 @@
                 width: 100%;
                 height: 0;
                 position: fixed;
-                top: 0;
+                top: 60px;
                 left: 0;
                 right: 0;
+                bottom: 0;
                 z-index: 1000;
-                background-color: #1a1a1e;
-                border-bottom: 1px solid #29292e;
+                background-color: var(--bg-secondary);
+                border-bottom: 1px solid var(--border-color);
                 transform: translateY(-100%);
-                transition: transform 0.3s ease;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 overflow-y: auto;
-                max-height: 100vh;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
             }
             #sidebar.open {
                 height: auto;
@@ -82,47 +106,60 @@
             #brand-header {
                 position: sticky;
                 top: 0;
-                background-color: #141416;
+                background-color: var(--bg-secondary);
                 z-index: 1001;
+                border-bottom: 1px solid var(--border-color);
             }
             #menu-toggle {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                width: 44px;
-                height: 44px;
-                background-color: #29292e;
+                width: 60px;
+                height: 60px;
+                background-color: var(--bg-tertiary);
                 border: none;
-                color: #e1e1e6;
+                color: var(--text-primary);
                 cursor: pointer;
-                font-size: 20px;
-                border-radius: 4px;
+                font-size: 24px;
+                border-radius: 0;
+                position: absolute;
+                top: 0;
+                right: 0;
+                z-index: 999;
+                transition: background 0.2s;
+            }
+            #menu-toggle:active {
+                background-color: var(--border-color);
             }
             #main-container {
                 width: 100%;
-                margin-top: 44px;
+                margin-top: 60px;
+                display: flex;
+                flex-direction: column;
+                flex: 1;
             }
             #editor-container {
-                height: 50vh;
+                flex: 1;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
             }
             #preview-panel {
-                height: 50vh;
-                border-top: 2px solid #29292e;
+                height: 45vh;
+                min-height: 200px;
+                border-top: 1px solid var(--border-color);
             }
             #code-editor {
-                padding: 12px;
+                padding: 16px;
                 font-size: 13px;
             }
             #toolbar {
                 flex-wrap: wrap;
+                gap: 8px;
             }
             .btn {
-                flex: 0 1 calc(50% - 6px);
+                flex: 0 1 calc(50% - 4px);
                 min-width: unset;
-            }
-            .btn:nth-child(3),
-            .btn:nth-child(4) {
-                flex: 0 1 calc(50% - 6px);
             }
             #file-tree {
                 max-height: 60vh;
@@ -131,169 +168,310 @@
 
         /* GENERAL STYLES */
         #sidebar {
-            background-color: #1a1a1e;
-            border-right: 1px solid #29292e;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
         }
+
         #brand-header {
-            padding: 16px;
+            padding: 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid #29292e;
-            background-color: #141416;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
             gap: 12px;
         }
+
         #logo {
-            font-size: 20px;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            color: #00875f;
-            text-shadow: 0 0 10px rgba(0, 135, 95, 0.3);
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px rgba(0, 135, 95, 0.2);
+            animation: pulse-glow 2s ease-in-out infinite;
         }
+
+        @keyframes pulse-glow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.1); }
+        }
+
         #sidebar-title {
             font-size: 11px;
-            font-weight: bold;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #8d8d99;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
             flex: 1;
         }
+
         #toolbar {
-            padding: 10px;
+            padding: 12px;
             display: flex;
-            gap: 6px;
-            border-bottom: 1px solid #29292e;
-            background-color: #16161a;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-secondary);
         }
+
         .btn {
-            background-color: #29292e;
-            color: #e1e1e6;
-            border: none;
-            padding: 8px 10px;
-            border-radius: 4px;
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--border-color) 100%);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
-            font-weight: 500;
-            transition: background 0.2s;
+            font-weight: 600;
+            transition: all 0.2s ease;
             text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
+
         .btn:hover {
-            background-color: #3a3a42;
+            background: linear-gradient(135deg, var(--border-color) 0%, var(--bg-tertiary) 100%);
+            border-color: var(--text-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
+
         .btn:active {
-            background-color: #4a4a52;
+            transform: translateY(0);
         }
+
         .btn-play {
-            background-color: #00875f;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
             color: white;
+            border: none;
+            font-weight: 700;
         }
+
         .btn-play:hover {
-            background-color: #00a372;
+            box-shadow: 0 6px 16px rgba(0, 135, 95, 0.3);
+            transform: translateY(-2px);
         }
+
         .btn-delete {
-            background-color: #c73636;
+            background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-hover) 100%);
             color: white;
+            border: none;
+            font-weight: 700;
         }
+
         .btn-delete:hover {
-            background-color: #e04242;
+            box-shadow: 0 6px 16px rgba(212, 63, 63, 0.3);
+            transform: translateY(-2px);
         }
+
         #file-tree {
             flex: 1;
             padding: 12px;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) transparent;
         }
+
+        #file-tree::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #file-tree::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #file-tree::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        #file-tree::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
         .tree-node {
-            margin-left: 14px;
+            margin-left: 12px;
             user-select: none;
         }
+
         .node-element {
             display: flex;
             align-items: center;
-            padding: 6px 8px;
-            border-radius: 4px;
+            padding: 8px 10px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
-            transition: background 0.2s;
+            transition: all 0.2s ease;
+            margin: 2px 0;
         }
+
         .node-element:hover {
-            background-color: #29292e;
+            background-color: var(--bg-tertiary);
+            transform: translateX(2px);
         }
+
         .node-element.active {
-            background-color: #202024;
-            border-left: 3px solid #00875f;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 6px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 135, 95, 0.2);
         }
+
         .node-info {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
+
         .node-icon {
             width: 18px;
             height: 18px;
             object-fit: contain;
+            opacity: 0.8;
         }
+
+        .node-element.active .node-icon {
+            opacity: 1;
+            filter: brightness(1.2);
+        }
+
         #main-container {
             display: flex;
             flex-direction: column;
+            background-color: var(--bg-dark);
         }
+
         #editor-container {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background-color: #121214;
+            background-color: var(--bg-dark);
+            min-height: 0;
         }
+
         #tab-bar {
-            height: 45px;
-            background-color: #1a1a1e;
+            height: 50px;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
             display: flex;
             align-items: center;
             padding: 0 16px;
-            border-bottom: 1px solid #29292e;
-            font-size: 14px;
-            color: #c4c4cc;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            color: var(--text-secondary);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            font-weight: 600;
+            gap: 8px;
         }
+
+        #tab-bar::before {
+            content: "📄";
+            font-size: 16px;
+        }
+
         #code-editor {
             flex: 1;
             width: 100%;
-            background-color: #121214;
-            color: #e1e1e6;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
             border: none;
-            font-family: "Fira Code", Consolas, Monaco, monospace;
+            font-family: "Fira Code", "Consolas", "Monaco", monospace;
             font-size: 14px;
             line-height: 1.6;
             resize: none;
             outline: none;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) transparent;
         }
+
+        #code-editor::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #code-editor::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #code-editor::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        #code-editor::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
         #preview-panel {
-            background-color: #1a1a1e;
-            border-top: 2px solid #29292e;
+            background-color: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            min-height: 0;
         }
+
         #preview-title {
-            padding: 8px 16px;
+            padding: 12px 16px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 700;
             text-transform: uppercase;
-            color: #8d8d99;
-            background-color: #141416;
-            border-bottom: 1px solid #29292e;
+            color: var(--text-secondary);
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-bottom: 1px solid var(--border-color);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
+        #preview-title::before {
+            content: "▶";
+            color: var(--primary-color);
+            font-weight: 900;
+        }
+
         #preview-frame {
             flex: 1;
             width: 100%;
             border: none;
             background-color: #ffffff;
         }
+
+        /* Smooth transitions */
+        * {
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tree-node {
+            animation: slideIn 0.3s ease;
+        }
     </style>
 </head>
 <body>
+
+    <button id="menu-toggle" onclick="toggleMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
 
     <div id="sidebar">
         <div id="brand-header">
@@ -301,15 +479,21 @@
             <div id="sidebar-title">Workspace</div>
         </div>
         <div id="toolbar">
-            <button class="btn" onclick="createNewElement('file')">+ Archivo</button>
-            <button class="btn" onclick="createNewElement('folder')">+ Carpeta</button>
-            <button class="btn btn-delete" onclick="deleteSelectedElement()">Eliminar</button>
-            <button class="btn btn-play" onclick="runCode()">▶ Play</button>
+            <button class="btn" onclick="createNewElement('file')" title="Crear archivo">
+                <i class="fas fa-file-plus"></i> Archivo
+            </button>
+            <button class="btn" onclick="createNewElement('folder')" title="Crear carpeta">
+                <i class="fas fa-folder-plus"></i> Carpeta
+            </button>
+            <button class="btn btn-delete" onclick="deleteSelectedElement()" title="Eliminar archivo">
+                <i class="fas fa-trash"></i> Eliminar
+            </button>
+            <button class="btn btn-play" onclick="runCode()" title="Ejecutar código">
+                <i class="fas fa-play"></i> Play
+            </button>
         </div>
         <div id="file-tree"></div>
     </div>
-
-    <button id="menu-toggle" onclick="toggleMenu()">☰</button>
 
     <div id="main-container">
         <div id="editor-container">
@@ -327,7 +511,7 @@
         const iconFileUrl = "https://www.svgrepo.com/show/530516/document.svg";
 
         let virtualFS = {
-            "index.html": { type: "file", content: "<!DOCTYPE html>\n<html>\n<body>\n  <h1>Entorno PXS</h1>\n  <p>Edita este archivo y haz clic en Play para ver los cambios abajo.</p>\n</body>\n</html>" }
+            "index.html": { type: "file", content: "<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 20px; color: white; }\n    h1 { text-align: center; margin-top: 50px; }\n    p { text-align: center; font-size: 18px; }\n  </style>\n</head>\n<body>\n  <h1>🎉 Entorno PXS</h1>\n  <p>Edita este archivo y haz clic en Play para ver los cambios.</p>\n</body>\n</html>" }
         };
 
         let selectedPath = null;

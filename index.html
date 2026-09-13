@@ -730,7 +730,17 @@
         const iconFileUrl = "https://www.svgrepo.com/show/530516/document.svg";
 
         let virtualFS = {
-            "index.html": { type: "file", content: "<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 20px; }\n    .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }\n    h1 { color: #333; text-align: center; }\n    p { color: #666; line-height: 1.6; }\n    button { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }\n    button:hover { background: #764ba2; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <h1>¡Bienvenido a PXS!</h1>\n    <p>Este es un editor de código HTML/CSS/JS virtual.</p>\n    <button onclick=\"alert('¡Funciona!')\">Haz clic aquí</button>\n  </div>\n  <script>\n    console.log('Página cargada correctamente');\n  <\/script>\n</body>\n</html>" }
+            "index.html": { 
+                type: "file", 
+                content: "<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }\n    .card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); text-align: center; max-width: 500px; }\n    h1 { color: #333; margin: 0 0 15px; font-size: 28px; }\n    p { color: #666; font-size: 16px; line-height: 1.6; }\n    .highlight { color: #667eea; font-weight: bold; }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1>¡Bienvenido a <span class=\"highlight\">PXS</span>!</h1>\n    <p>Este es el archivo ejemplo. Puedes crear nuevos archivos, editar código y ver los cambios en tiempo real.</p>\n    <p>Haz clic en el botón <strong>Play</strong> para ejecutar el código.</p>\n  </div>\n</body>\n</html>" 
+            },
+            "estilos": {
+                type: "folder"
+            },
+            "estilos/style.css": {
+                type: "file",
+                content: "/* Estilos personalizados para tu proyecto */\nbody {\n  margin: 0;\n  padding: 0;\n  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n}\n\n.container {\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 20px;\n}\n"
+            }
         };
 
         let selectedPath = null;
@@ -1005,5 +1015,6 @@
 
         refreshTree();
     </script>
+
 </body>
 </html>

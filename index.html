@@ -3,1018 +3,458 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PXS - Explorador de Archivos Virtual</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Calculadora de Stats - Dandy's World</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         :root {
-            --primary-color: #00875f;
-            --primary-hover: #00a372;
-            --bg-dark: #0d0d12;
-            --bg-secondary: #16161b;
-            --bg-tertiary: #1f1f26;
-            --border-color: #2a2a32;
-            --text-primary: #e8e8ee;
-            --text-secondary: #a0a0a8;
-            --danger-color: #d43f3f;
-            --danger-hover: #e04242;
-            --warning-color: #f59e0b;
-            --success-color: #10b981;
-            --error-color: #ef4444;
+            --bg-color: #100d1c;
+            --card-bg: #1b1730;
+            --panel-bg: #25203e;
+            --purple: #a855f7;
+            --yellow: #ffd166;
+            --cyan: #55e6d1;
+            --text: #ffffff;
+            --muted: #b7b2d0;
+            --border: #443760;
         }
-
+        * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(ellipse at top left, #30204b 0, transparent 45%),
+                        radial-gradient(ellipse at bottom right, #13383d 0, transparent 38%),
+                        var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            min-height: 100vh;
+            padding: 20px;
             display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* DESKTOP */
-        @media (min-width: 769px) {
-            body {
-                flex-direction: row;
-            }
-            #sidebar {
-                width: 300px;
-                background-color: var(--bg-secondary);
-                border-right: 1px solid var(--border-color);
-                display: flex;
-                flex-direction: column;
-                position: static;
-                height: 100vh;
-                transform: translateX(0);
-                box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
-            }
-            #sidebar.open {
-                transform: translateX(0);
-            }
-            #menu-toggle {
-                display: none;
-            }
-            #main-container {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-            }
-            #editor-container {
-                flex: 1;
-                min-height: 0;
-            }
-            #code-editor {
-                padding: 20px;
-            }
-            #preview-panel {
-                height: 35%;
-                min-height: 200px;
-            }
-            #console-panel {
-                height: 25%;
-                min-height: 150px;
-            }
-            .btn {
-                flex: 1;
-                min-width: 70px;
-            }
-            #play-button-fixed {
-                display: flex;
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
-                z-index: 500;
-            }
-        }
-
-        /* MOBILE */
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-            #sidebar {
-                width: 100%;
-                height: 0;
-                position: fixed;
-                top: 60px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                z-index: 1000;
-                background-color: var(--bg-secondary);
-                border-bottom: 1px solid var(--border-color);
-                transform: translateY(-100%);
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                overflow-y: auto;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-            }
-            #sidebar.open {
-                height: auto;
-                transform: translateY(0);
-            }
-            #brand-header {
-                position: sticky;
-                top: 0;
-                background-color: var(--bg-secondary);
-                z-index: 1001;
-                border-bottom: 1px solid var(--border-color);
-            }
-            #menu-toggle {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 60px;
-                height: 60px;
-                background-color: var(--bg-tertiary);
-                border: none;
-                color: var(--text-primary);
-                cursor: pointer;
-                font-size: 24px;
-                border-radius: 0;
-                position: absolute;
-                top: 0;
-                right: 0;
-                z-index: 999;
-                transition: background 0.2s;
-            }
-            #menu-toggle:active {
-                background-color: var(--border-color);
-            }
-            #main-container {
-                width: 100%;
-                margin-top: 60px;
-                display: flex;
-                flex-direction: column;
-                flex: 1;
-            }
-            #editor-container {
-                flex: 1;
-                min-height: 0;
-                display: flex;
-                flex-direction: column;
-            }
-            #preview-panel {
-                height: 30vh;
-                min-height: 150px;
-                border-top: 1px solid var(--border-color);
-            }
-            #console-panel {
-                height: 25vh;
-                min-height: 120px;
-                border-top: 1px solid var(--border-color);
-            }
-            #code-editor {
-                padding: 16px;
-                font-size: 13px;
-            }
-            #toolbar {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            .btn {
-                flex: 0 1 calc(50% - 4px);
-                min-width: unset;
-            }
-            #file-tree {
-                max-height: 60vh;
-            }
-            #play-button-fixed {
-                display: flex;
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                z-index: 500;
-            }
-        }
-
-        /* GENERAL STYLES */
-        #sidebar {
-            background-color: var(--bg-secondary);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-        }
-
-        #brand-header {
-            padding: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border-color);
-            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-            gap: 12px;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #logo-svg {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
             justify-content: center;
-        }
-
-        #logo-text {
-            font-size: 18px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { filter: brightness(1); }
-            50% { filter: brightness(1.1); }
-        }
-
-        #logo-svg {
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        #sidebar-title {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-secondary);
-            flex: 1;
-        }
-
-        #toolbar {
-            padding: 12px;
-            display: flex;
-            gap: 8px;
-            border-bottom: 1px solid var(--border-color);
-            background-color: var(--bg-secondary);
-        }
-
-        .btn {
-            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--border-color) 100%);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 10px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .btn:hover {
-            background: linear-gradient(135deg, var(--border-color) 0%, var(--bg-tertiary) 100%);
-            border-color: var(--text-secondary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-play {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-            color: white;
-            border: none;
-            font-weight: 700;
-            padding: 12px 16px;
-            font-size: 14px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 135, 95, 0.3);
-        }
-
-        .btn-play:hover {
-            box-shadow: 0 8px 20px rgba(0, 135, 95, 0.4);
-            transform: translateY(-3px);
-        }
-
-        .btn-play:active {
-            transform: translateY(-1px);
-        }
-
-        .btn-delete {
-            background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-hover) 100%);
-            color: white;
-            border: none;
-            font-weight: 700;
-        }
-
-        .btn-delete:hover {
-            box-shadow: 0 6px 16px rgba(212, 63, 63, 0.3);
-            transform: translateY(-2px);
-        }
-
-        #file-tree {
-            flex: 1;
-            padding: 12px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border-color) transparent;
-        }
-
-        #file-tree::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        #file-tree::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        #file-tree::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 3px;
-        }
-
-        #file-tree::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary);
-        }
-
-        .tree-node {
-            margin-left: 12px;
-            user-select: none;
-        }
-
-        .node-element {
-            display: flex;
-            align-items: center;
-            padding: 8px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            margin: 2px 0;
-        }
-
-        .node-element:hover {
-            background-color: var(--bg-tertiary);
-            transform: translateX(2px);
-        }
-
-        .node-element.active {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-            border-left: 4px solid var(--primary-color);
-            padding-left: 6px;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 135, 95, 0.2);
-        }
-
-        .node-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .node-icon {
-            width: 18px;
-            height: 18px;
-            object-fit: contain;
-            opacity: 0.8;
-        }
-
-        .node-element.active .node-icon {
-            opacity: 1;
-            filter: brightness(1.2);
-        }
-
-        #main-container {
-            display: flex;
-            flex-direction: column;
-            background-color: var(--bg-dark);
-        }
-
-        #editor-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--bg-dark);
-            min-height: 0;
-        }
-
-        #tab-bar {
-            height: 50px;
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 13px;
-            color: var(--text-secondary);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-weight: 600;
-            gap: 8px;
-        }
-
-        #tab-bar::before {
-            content: "📄";
-            font-size: 16px;
-        }
-
-        #code-editor {
-            flex: 1;
-            width: 100%;
-            background-color: var(--bg-dark);
-            color: var(--text-primary);
-            border: none;
-            font-family: "Fira Code", "Consolas", "Monaco", monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            resize: none;
-            outline: none;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border-color) transparent;
-        }
-
-        #code-editor::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        #code-editor::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        #code-editor::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 3px;
-        }
-
-        #code-editor::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary);
-        }
-
-        #preview-panel {
-            background-color: var(--bg-secondary);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-        }
-
-        #preview-title {
-            padding: 12px 16px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-            border-bottom: 1px solid var(--border-color);
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        #preview-title::before {
-            content: "▶";
-            color: var(--primary-color);
-            font-weight: 900;
-        }
-
-        #preview-frame {
-            flex: 1;
-            width: 100%;
-            border: none;
-            background-color: #ffffff;
-        }
-
-        /* CONSOLE STYLES */
-        #console-panel {
-            background-color: var(--bg-secondary);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-        }
-
-        #console-title {
-            padding: 12px 16px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-secondary);
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-            border-bottom: 1px solid var(--border-color);
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: space-between;
-        }
-
-        #console-title::before {
-            content: "🖥";
-        }
-
-        #console-clear-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            padding: 4px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            transition: all 0.2s ease;
-        }
-
-        #console-clear-btn:hover {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        #console-output {
-            flex: 1;
-            overflow-y: auto;
-            font-family: "Fira Code", "Consolas", "Monaco", monospace;
-            font-size: 12px;
-            padding: 12px;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border-color) transparent;
-        }
-
-        #console-output::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        #console-output::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        #console-output::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 3px;
-        }
-
-        #console-output::-webkit-scrollbar-thumb:hover {
-            background: var(--text-secondary);
-        }
-
-        .console-line {
-            margin: 4px 0;
-            padding: 4px 8px;
-            border-radius: 3px;
-            display: flex;
-            gap: 8px;
             align-items: flex-start;
         }
-
-        .console-line-content {
-            flex: 1;
-            word-break: break-word;
+        .app-container {
+            width: 100%;
+            max-width: 520px;
         }
-
-        .console-log {
-            color: var(--text-primary);
+        .card {
+            background-color: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 0 28px rgba(168, 85, 247, 0.12);
         }
-
-        .console-error {
-            color: var(--error-color);
-            background-color: rgba(239, 68, 68, 0.1);
-            border-left: 3px solid var(--error-color);
-            padding-left: 8px;
+        h1 {
+            margin: 0 0 22px;
+            color: var(--yellow);
+            text-align: center;
+            font-size: 1.5rem;
+            text-shadow: 0 0 18px rgba(255, 209, 102, 0.32);
         }
-
-        .console-warn {
-            color: var(--warning-color);
-            background-color: rgba(245, 158, 11, 0.1);
-            border-left: 3px solid var(--warning-color);
-            padding-left: 8px;
+        .form-group { margin-bottom: 14px; }
+        .tab-nav {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 18px;
         }
-
-        .console-success {
-            color: var(--success-color);
-            background-color: rgba(16, 185, 129, 0.1);
-            border-left: 3px solid var(--success-color);
-            padding-left: 8px;
+        .stars-panel {
+            overflow-x: auto;
         }
-
-        .console-icon {
-            font-size: 10px;
-            min-width: 16px;
+        .stars-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 430px;
             text-align: center;
         }
-
-        .console-line-number {
-            color: var(--text-secondary);
-            font-size: 10px;
-            padding: 0 4px;
-            background-color: var(--bg-tertiary);
-            border-radius: 2px;
-            white-space: nowrap;
+        .stars-table th, .stars-table td {
+            padding: 10px 6px;
+            border-bottom: 1px solid var(--border);
         }
-
-        /* Play Button Fixed */
-        #play-button-fixed {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 500;
+        .stars-table th { color: var(--yellow); }
+        .stars-table td:first-child, .stars-table th:first-child {
+            text-align: left;
         }
-
-        /* Smooth transitions */
-        * {
-            transition: background-color 0.2s ease, color 0.2s ease;
+        .stars-table td { color: var(--muted); }
+        .stars-table .star-heading { color: var(--yellow); }
+        .tab-btn {
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--panel-bg);
+            color: var(--muted);
+            font: inherit;
+            cursor: pointer;
         }
-
-        /* Animations */
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
+        .tab-btn {
+            transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.2s;
+        }
+        .tab-btn:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+            transform: translateY(-1px);
+        }
+        .tab-btn.active {
+            border-color: var(--yellow);
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(255, 209, 102, 0.1));
+            color: var(--yellow);
+        }
+        .values-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .values-panel p { margin: 10px 0; color: var(--muted); }
+        .values-panel strong { color: var(--text); }
+        .values-panel .secondary-btn { margin-top: 12px; }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+        select, input {
+            width: 100%;
+            padding: 11px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: var(--panel-bg);
+            color: white;
+            font-size: 1rem;
+            accent-color: var(--purple);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 3px rgba(85, 230, 209, 0.15);
+        }
+        .star-label { margin-top: 4px; }
+        .star-selector {
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--panel-bg);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 8px 0 16px;
+            border: 1px solid var(--border);
+        }
+        .star-btn {
+            background: none;
+            border: none;
+            color: #444a6d;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.2s, color 0.2s;
+            padding: 0 5px;
+        }
+        .star-btn:hover { color: var(--cyan); transform: scale(1.12); }
+        .star-btn.active { color: var(--yellow); transform: scale(1.12); }
+        .result-box {
+            background: linear-gradient(145deg, rgba(168, 85, 247, 0.13), rgba(85, 230, 209, 0.07)), var(--panel-bg);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--yellow);
+            box-shadow: 0 0 18px rgba(255, 209, 102, 0.08);
+            margin-top: 18px;
+        }
+        .big-val { font-size: 1.6rem; color: var(--yellow); font-weight: bold; }
+        #starOutput { margin-top: 5px; }
+        .movement-result-item { margin-top: 12px; }
+        .movement-result-item .big-val { margin-left: 4px; }
+        .modifier-summary {
+            margin-top: 16px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            text-align: left;
+        }
+        .modifier-summary summary {
+            color: var(--yellow);
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modifier-summary p { margin: 10px 0 0; color: var(--muted); }
+        .modifier-entry {
+            margin: 10px 0;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+        }
+        .modifier-entry p { margin: 0 0 10px; }
+        .remove-modifier { padding: 7px; color: #ffb3b3; }
+        .secondary-btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: rgba(168, 85, 247, 0.06);
+            color: var(--muted);
+            font: inherit;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s, background 0.2s;
+        }
+        .secondary-btn:hover {
+            border-color: var(--cyan);
+            background: rgba(85, 230, 209, 0.09);
+            color: var(--cyan);
+        }
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            .card { padding: 18px 15px; }
+            h1 { font-size: 1.3rem; }
+            .star-btn { font-size: 1.8rem; }
+            .stars-panel { padding: 14px 10px; }
+            .stars-table { min-width: 0; display: block; }
+            .stars-table thead { display: none; }
+            .stars-table tbody { display: grid; gap: 10px; }
+            .stars-table tr {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr);
+                padding: 10px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: rgba(168, 85, 247, 0.08);
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            .stars-table th, .stars-table td {
+                border: 0;
+                padding: 5px 2px;
             }
-        }
-
-        .tree-node {
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes pulse-play {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        #play-button-fixed {
-            animation: pulse-play 2s ease-in-out infinite;
-        }
-
-        #play-button-fixed:hover {
-            animation: none;
+            .stars-table th:first-child { text-align: left; }
+            .stars-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+                text-align: right;
+                overflow-wrap: anywhere;
+            }
+            .stars-table td::before {
+                content: attr(data-label);
+                color: var(--muted);
+                text-align: left;
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
 <body>
+    <main class="app-container">
+        <section class="card" aria-labelledby="title">
+            <h1 id="title">Calculadora de Stats</h1>
+            <div class="tab-nav" role="tablist" aria-label="Secciones de la calculadora">
+                <button class="tab-btn active" type="button" id="calculatorTab" role="tab" aria-selected="true">Calculadora</button>
+                <button class="tab-btn" type="button" id="valuesTab" role="tab" aria-selected="false">Valores aplicados</button>
+                <button class="tab-btn" type="button" id="starsTab" role="tab" aria-selected="false">Estrellas elegidas</button>
+            </div>
 
-    <button id="menu-toggle" onclick="toggleMenu()">
-        <i class="fas fa-bars"></i>
-    </button>
+            <div id="calculatorPanel" role="tabpanel" aria-labelledby="calculatorTab">
+            <div class="form-group">
+                <label for="statType">Selecciona estadística:</label>
+                <select id="statType">
+                    <option value="extraction">Extraction Speed (Velocidad de Extracción)</option>
+                    <option value="movement">Movement Speed (Walk + Run)</option>
+                    <option value="skillcheck">Skill Check Size (Tamaño de Acierto)</option>
+                    <option value="stamina">Stamina (Aguante Máximo)</option>
+                    <option value="stealth">Stealth (Sigilo)</option>
+                </select>
+            </div>
 
-    <div id="sidebar">
-        <div id="brand-header">
-            <div class="logo-container">
-                <div id="logo-svg">
-                    <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
-                        <!-- Fondo circular sutil -->
-                        <circle cx="20" cy="20" r="18" fill="none" stroke="#00875f" stroke-width="1.5" opacity="0.3"/>
-                        <!-- Símbolo: "<" -->
-                        <path d="M 12 10 L 24 20 L 12 30" fill="none" stroke="#00875f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <!-- Símbolo: ">" -->
-                        <path d="M 28 10 L 16 20 L 28 30" fill="none" stroke="#00a372" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        <!-- Punto central -->
-                        <circle cx="20" cy="20" r="2" fill="#00875f"/>
-                    </svg>
+            <label class="star-label">Seleccionar nivel objetivo (1 - 5 estrellas):</label>
+            <div class="star-selector" id="starSelector">
+                <button class="star-btn" type="button" data-star="1" aria-label="1 estrella">★</button>
+                <button class="star-btn" type="button" data-star="2" aria-label="2 estrellas">★</button>
+                <button class="star-btn active" type="button" data-star="3" aria-label="3 estrellas">★</button>
+                <button class="star-btn" type="button" data-star="4" aria-label="4 estrellas">★</button>
+                <button class="star-btn" type="button" data-star="5" aria-label="5 estrellas">★</button>
+            </div>
+
+            <div class="form-group" id="singleBaseGroup">
+                <label for="baseVal">Valor base del Toon:</label>
+                <input type="number" id="baseVal" step="0.01" value="1.00">
+            </div>
+            <div class="form-group" id="movementBaseGroup" hidden>
+                <label for="walkBase">Velocidad base Walk:</label>
+                <input type="number" id="walkBase" step="0.1" value="15">
+                <label for="runBase" style="margin-top: 10px;">Velocidad base Run:</label>
+                <input type="number" id="runBase" step="0.1" value="25">
+            </div>
+            <div class="form-group" id="movementTargetGroup" hidden>
+                <label for="movementTarget">Aplicar modificadores a:</label>
+                <select id="movementTarget">
+                    <option value="both">Walk y Run</option>
+                    <option value="walk">Solo Walk</option>
+                    <option value="run">Solo Run</option>
+                    <option value="none">Ninguno</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="multiplier">Multiplicador (×):</label>
+                <input type="number" id="multiplier" step="0.01" value="1.00">
+            </div>
+            <div class="form-group">
+                <label for="percent">Modificador porcentaje (%):</label>
+                <input type="number" id="percent" step="0.1" value="0">
+            </div>
+            <div class="form-group">
+                <label for="flat">Valor plano (+ / -):</label>
+                <input type="number" id="flat" step="1" value="0">
+            </div>
+            <button class="secondary-btn" type="button" id="addModifier">Añadir modificador</button>
+            <button class="secondary-btn" type="button" id="clearModifiers">Quitar todos los modificadores</button>
+
+            <div class="result-box" aria-live="polite">
+                <div id="singleResult">
+                    <div>Valor calculado final:</div>
+                    <div class="big-val" id="finalVal">1.00</div>
+                    <div id="starOutput">Equivale a: ★★★☆☆ (3 estrellas)</div>
                 </div>
-                <div id="logo-text">PXS</div>
+                <div id="movementResult" hidden>
+                    <div>Velocidades calculadas:</div>
+                    <div class="movement-result-item">
+                        <strong>Walk:</strong> <span class="big-val" id="walkFinal">15.00</span>
+                        <div id="walkStars"></div>
+                    </div>
+                    <div class="movement-result-item">
+                        <strong>Run:</strong> <span class="big-val" id="runFinal">25.00</span>
+                        <div id="runStars"></div>
+                    </div>
+                    <details class="modifier-summary">
+                        <summary>Ver qué se aplicó a Walk y Run</summary>
+                        <p id="walkModifierSummary"></p>
+                        <p id="runModifierSummary"></p>
+                    </details>
+                </div>
             </div>
-            <div id="sidebar-title">Workspace</div>
-        </div>
-        <div id="toolbar">
-            <button class="btn" onclick="createNewElement('file')" title="Crear archivo">
-                <i class="fas fa-file-plus"></i> Archivo
-            </button>
-            <button class="btn" onclick="createNewElement('folder')" title="Crear carpeta">
-                <i class="fas fa-folder-plus"></i> Carpeta
-            </button>
-            <button class="btn btn-delete" onclick="deleteSelectedElement()" title="Eliminar archivo">
-                <i class="fas fa-trash"></i> Eliminar
-            </button>
-        </div>
-        <div id="file-tree"></div>
-    </div>
-
-    <div id="main-container">
-        <div id="editor-container">
-            <div id="tab-bar">Ningún archivo seleccionado</div>
-            <textarea id="code-editor" readonly placeholder="Selecciona o crea un archivo para comenzar a programar en PXS..."></textarea>
-        </div>
-        <div id="preview-panel">
-            <div id="preview-title">Ejecución en Vivo</div>
-            <iframe id="preview-frame"></iframe>
-        </div>
-        <div id="console-panel">
-            <div id="console-title">
-                <span>Consola / Errores</span>
-                <button id="console-clear-btn" onclick="clearConsole()">Limpiar</button>
             </div>
-            <div id="console-output"></div>
-        </div>
-    </div>
-
-    <!-- Play Button Fixed -->
-    <button id="play-button-fixed" class="btn btn-play" onclick="runCode()" title="Ejecutar código">
-        <i class="fas fa-play"></i> Play
-    </button>
+            <div id="valuesPanel" class="values-panel" role="tabpanel" aria-labelledby="valuesTab" hidden>
+                <h2>Valores aplicados</h2>
+                <p id="appliedTarget"></p>
+                <div id="modifierList" aria-live="polite"></div>
+                <p id="appliedWalk"></p>
+                <p id="appliedRun"></p>
+                <p id="appliedSingle"></p>
+                <button class="secondary-btn" type="button" id="clearModifiersDetails">Quitar todos los modificadores</button>
+            </div>
+            <div id="starsPanel" class="values-panel stars-panel" role="tabpanel" aria-labelledby="starsTab" hidden>
+                <h2>Estrellas elegidas por estadística</h2>
+                <p>Aquí puedes consultar el nivel que elegiste para cada estadística.</p>
+                <div id="starsTableContainer"></div>
+            </div>
+        </section>
+    </main>
 
     <script>
-        const iconFolderUrl = "https://www.svgrepo.com/show/530518/folder.svg";
-        const iconFileUrl = "https://www.svgrepo.com/show/530516/document.svg";
-
-        let virtualFS = {
-            "index.html": { 
-                type: "file", 
-                content: "<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }\n    .card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); text-align: center; max-width: 500px; }\n    h1 { color: #333; margin: 0 0 15px; font-size: 28px; }\n    p { color: #666; font-size: 16px; line-height: 1.6; }\n    .highlight { color: #667eea; font-weight: bold; }\n  </style>\n</head>\n<body>\n  <div class=\"card\">\n    <h1>¡Bienvenido a <span class=\"highlight\">PXS</span>!</h1>\n    <p>Este es el archivo ejemplo. Puedes crear nuevos archivos, editar código y ver los cambios en tiempo real.</p>\n    <p>Haz clic en el botón <strong>Play</strong> para ejecutar el código.</p>\n  </div>\n</body>\n</html>" 
-            },
-            "estilos": {
-                type: "folder"
-            },
-            "estilos/style.css": {
-                type: "file",
-                content: "/* Estilos personalizados para tu proyecto */\nbody {\n  margin: 0;\n  padding: 0;\n  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n}\n\n.container {\n  max-width: 1200px;\n  margin: 0 auto;\n  padding: 20px;\n}\n"
-            }
+        const statTables = {
+            extraction: [0.75, 0.85, 1.00, 1.20, 1.50],
+            walk: [10, 12.5, 15, 17.5, 20],
+            run: [20, 22.5, 25, 27.5, 30],
+            skillcheck: [50, 100, 150, 200, 250],
+            stamina: [100, 125, 150, 175, 200],
+            stealth: [0, 5, 10, 15, 20]
         };
 
-        let selectedPath = null;
-        let currentOpenPath = null;
-        
-        const fileTreeContainer = document.getElementById("file-tree");
-        const tabBar = document.getElementById("tab-bar");
-        const codeEditor = document.getElementById("code-editor");
-        const previewFrame = document.getElementById("preview-frame");
-        const consoleOutput = document.getElementById("console-output");
-        const sidebar = document.getElementById("sidebar");
-
-        // Store original console methods
-        const originalConsole = {
-            log: console.log,
-            error: console.error,
-            warn: console.warn
+        const chosenStars = {
+            extraction: 3,
+            movement: 3,
+            skillcheck: 3,
+            stamina: 3,
+            stealth: 3
         };
 
-        function toggleMenu() {
-            sidebar.classList.toggle("open");
+        function renderStarsTable() {
+            const rows = [
+                ['Extraction Speed', 'extraction'],
+                ['Movement Speed — Walk', 'walk', 'movement'],
+                ['Movement Speed — Run', 'run', 'movement'],
+                ['Skill Check Size', 'skillcheck'],
+                ['Stamina', 'stamina'],
+                ['Stealth', 'stealth']
+            ];
+            const tableRows = rows.map(([label, stat, selection = stat]) => {
+                const stars = chosenStars[selection];
+                const value = statTables[stat][stars - 1];
+                return `<tr><th scope="row">${label}</th><td class="star-heading" data-label="Estrellas elegidas">${formatStars(stars)}</td><td data-label="Valor">${value}</td></tr>`;
+            }).join('');
+            document.getElementById('starsTableContainer').innerHTML =
+                `<table class="stars-table"><thead><tr><th scope="col">Estadística</th><th scope="col">Estrellas elegidas</th><th scope="col">Valor</th></tr></thead><tbody>${tableRows}</tbody></table>`;
         }
 
-        function closeSidebar() {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove("open");
-            }
+        function numericValue(id, fallback) {
+            const value = Number(document.getElementById(id).value);
+            return Number.isFinite(value) ? value : fallback;
         }
 
-        function buildTree(fs) {
-            let root = {};
-            for (let path in fs) {
-                let parts = path.split('/');
-                let current = root;
-                for (let i = 0; i < parts.length; i++) {
-                    let part = parts[i];
-                    if (!current[part]) {
-                        current[part] = { _meta: i === parts.length - 1 ? fs[path] : { type: "folder" }, _children: {} };
-                    }
-                    current = current[part]._children;
-                }
-            }
-            return root;
+        function getStars(value, thresholds) {
+            let stars = 1;
+            thresholds.forEach((threshold, index) => {
+                if (value >= threshold) stars = index + 1;
+            });
+            return stars;
         }
 
-        function renderTree(tree, container, currentPath = "") {
-            for (let key in tree) {
-                let node = tree[key]._meta;
-                let children = tree[key]._children;
-                let fullPath = currentPath ? `${currentPath}/${key}` : key;
-
-                let div = document.createElement("div");
-                div.className = "tree-node";
-
-                let element = document.createElement("div");
-                element.className = "node-element";
-                if (selectedPath === fullPath) element.classList.add("active");
-                
-                const iconSrc = node.type === 'folder' ? iconFolderUrl : iconFileUrl;
-                const iconHtml = `<img src="${iconSrc}" class="node-icon" alt="${node.type}">`;
-
-                element.innerHTML = `<div class="node-info">${iconHtml}<span>${key}</span></div>`;
-
-                element.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    selectElement(fullPath, element, node.type);
-                    closeSidebar();
-                });
-
-                div.appendChild(element);
-
-                if (Object.keys(children).length > 0) {
-                    let childrenContainer = document.createElement("div");
-                    renderTree(children, childrenContainer, fullPath);
-                    div.appendChild(childrenContainer);
-                }
-
-                container.appendChild(div);
-            }
+        function formatStars(stars) {
+            const display = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+            return `${display} (${stars} estrella${stars === 1 ? '' : 's'})`;
         }
 
-        function refreshTree() {
-            fileTreeContainer.innerHTML = "";
-            const structuredTree = buildTree(virtualFS);
-            renderTree(structuredTree, fileTreeContainer);
+        const activeModifiers = [];
+        const targetLabels = { both: 'Walk y Run', walk: 'solo Walk', run: 'solo Run', none: 'ninguno' };
+
+        function effectFor(target, type) {
+            const applicable = activeModifiers.filter(item => {
+                if (item.stat !== type) return false;
+                return type !== 'movement' || item.target === 'both' || item.target === target;
+            });
+            return applicable.reduce((effect, item) => {
+                effect.multiplier *= item.multiplier * (1 + item.percent / 100);
+                effect.flat += item.flat;
+                return effect;
+            }, { multiplier: 1, flat: 0 });
         }
 
-        function selectElement(path, element, type) {
-            document.querySelectorAll(".node-element").forEach(el => el.classList.remove("active"));
-            element.classList.add("active");
-            selectedPath = path;
-
-            if (type === "file") {
-                if (currentOpenPath) {
-                    virtualFS[currentOpenPath].content = codeEditor.value;
-                }
-                currentOpenPath = path;
-                tabBar.textContent = path;
-                codeEditor.value = virtualFS[path].content;
-                codeEditor.removeAttribute("readonly");
-            }
-        }
-
-        function createNewElement(type) {
-            let defaultName = type === "file" ? "index.html" : "nueva_carpeta";
-            let name = prompt(`Nombre del nuevo ${type === 'file' ? 'archivo' : 'carpeta'}:`, defaultName);
-            
-            if (!name) return;
-
-            let path = name;
-            if (selectedPath) {
-                if (virtualFS[selectedPath] && virtualFS[selectedPath].type === "folder") {
-                    path = `${selectedPath}/${name}`;
-                } else {
-                    let parts = selectedPath.split('/');
-                    parts.pop();
-                    if (parts.length > 0) {
-                        path = `${parts.join('/')}/${name}`;
-                    }
-                }
-            }
-
-            if (virtualFS[path]) {
-                alert("Este elemento ya existe en la ruta.");
+        function renderModifierList() {
+            const list = document.getElementById('modifierList');
+            list.replaceChildren();
+            if (activeModifiers.length === 0) {
+                const empty = document.createElement('p');
+                empty.textContent = 'Todavía no has añadido modificadores.';
+                list.append(empty);
                 return;
             }
 
-            virtualFS[path] = {
-                type: type,
-                content: type === "file" ? "<!-- Desarrollado en PXS -->" : undefined
-            };
-
-            refreshTree();
+            activeModifiers.forEach((item, index) => {
+                const entry = document.createElement('div');
+                entry.className = 'modifier-entry';
+                const description = document.createElement('p');
+                const destination = item.stat === 'movement' ? targetLabels[item.target] : item.statLabel;
+                description.textContent = `#${index + 1} · Para: ${destination} · Multiplicador: ×${item.multiplier.toFixed(2)} · Porcentaje: ${item.percent}% · Valor plano: ${item.flat >= 0 ? '+' : ''}${item.flat}`;
+                const remove = document.createElement('button');
+                remove.className = 'secondary-btn remove-modifier';
+                remove.type = 'button';
+                remove.dataset.removeModifier = String(index);
+                remove.textContent = 'Quitar este modificador';
+                entry.append(description, remove);
+                list.append(entry);
+            });
         }
 
-        function deleteSelectedElement() {
-            if (!selectedPath) {
-                alert("Selecciona un archivo o carpeta en el explorador para borrar.");
-                return;
-            }
+        function updateAppliedSummary(type, walk, run, single) {
+            const isMovement = type === 'movement';
+            const statLabel = document.getElementById('statType').selectedOptions[0].text;
+            document.getElementById('appliedTarget').textContent = isMovement
+                ? `Destino elegido para el próximo modificador: ${targetLabels[document.getElementById('movementTarget').value]}.`
+                : `Estadística seleccionada: ${statLabel}.`;
+            document.getElementById('appliedWalk').hidden = !isMovement;
+            document.getElementById('appliedRun').hidden = !isMovement;
+            document.getElementById('appliedSingle').hidden = isMovement;
 
-            if (confirm(`¿Eliminar definitivamente '${selectedPath}'?`)) {
-                for (let path in virtualFS) {
-                    if (path === selectedPath || path.startsWith(selectedPath + "/")) {
-                        delete virtualFS[path];
-                    }
-                }
-
-                if (currentOpenPath && (currentOpenPath === selectedPath || currentOpenPath.startsWith(selectedPath + "/"))) {
-                    currentOpenPath = null;
-                    tabBar.textContent = "Ningún archivo seleccionado";
-                    codeEditor.value = "";
-                    codeEditor.setAttribute("readonly", "true");
-                }
-
-                selectedPath = null;
-                refreshTree();
-            }
-        }
-
-        function clearConsole() {
-            consoleOutput.innerHTML = "";
-        }
-
-        function addConsoleLog(message, type = "log", lineNumber = null) {
-            const line = document.createElement("div");
-            line.className = `console-line console-${type}`;
-            
-            let icon = "📝";
-            if (type === "error") icon = "❌";
-            if (type === "warn") icon = "⚠️";
-            if (type === "success") icon = "✅";
-
-            let lineContent = `<span class="console-icon">${icon}</span>`;
-            if (lineNumber !== null) {
-                lineContent += `<span class="console-line-number">Línea ${lineNumber}</span>`;
-            }
-            lineContent += `<span class="console-line-content">${message}</span>`;
-            
-            line.innerHTML = lineContent;
-            consoleOutput.appendChild(line);
-            consoleOutput.scrollTop = consoleOutput.scrollHeight;
-        }
-
-        function interceptConsole(doc) {
-            // Intercept console in iframe
-            doc.defaultView.console.log = function(...args) {
-                originalConsole.log(...args);
-                addConsoleLog(args.join(" "), "log");
-            };
-            
-            doc.defaultView.console.error = function(...args) {
-                originalConsole.error(...args);
-                addConsoleLog(args.join(" "), "error");
-            };
-            
-            doc.defaultView.console.warn = function(...args) {
-                originalConsole.warn(...args);
-                addConsoleLog(args.join(" "), "warn");
-            };
-        }
-
-        function runCode() {
-            if (!currentOpenPath) {
-                alert("Abre un archivo para ejecutar su contenido.");
-                return;
-            }
-            
-            clearConsole();
-            addConsoleLog("▶ Ejecutando código...", "success");
-            
-            virtualFS[currentOpenPath].content = codeEditor.value;
-            let code = codeEditor.value;
-
-            try {
-                let doc = previewFrame.contentWindow.document;
-                doc.open();
-                
-                // Intercept console before writing
-                const modifiedCode = `
-                    <script>
-                        window.addEventListener('error', function(e) {
-                            console.error('Error: ' + e.message + ' en línea ' + e.lineno);
-                        });
-                    </script>
-                    ${code}
-                `;
-                
-                doc.write(modifiedCode);
-                doc.close();
-                
-                // Intercept console after document loads
-                setTimeout(() => {
-                    interceptConsole(doc);
-                    addConsoleLog("Código ejecutado correctamente", "success");
-                }, 100);
-                
-            } catch (error) {
-                addConsoleLog(`Error al ejecutar: ${error.message}`, "error");
-            }
-        }
-
-        // Intercept iframe errors
-        previewFrame.onload = function() {
-            try {
-                const doc = previewFrame.contentWindow.document;
-                interceptConsole(doc);
-                
-                previewFrame.contentWindow.addEventListener('error', function(event) {
-                    const line = event.lineno || "desconocida";
-                    addConsoleLog(`${event.message}`, "error", line);
-                    event.preventDefault();
-                });
-            } catch (e) {
-                originalConsole.error("No se pudo interceptar los errores del iframe", e);
-            }
-        };
-
-        codeEditor.addEventListener("input", () => {
-            if (currentOpenPath) {
-                virtualFS[currentOpenPath].content = codeEditor.value;
-            }
-        });
-
-        // Cerrar sidebar al hacer click en el contenedor principal en móvil
-        document.getElementById("main-container").addEventListener("click", closeSidebar);
-
-        // Prevent play button from triggering main-container click
-        document.getElementById("play-button-fixed").addEventListener("click", (e) => {
-            e.stopPropagation();
-        });
-
-        refreshTree();
-    </script>
-
-</body>
-</html>
+            if (isMovement) {
+                const walkBase = numericValue('walkBase', 0);
+                const runBase = numericValue('runBase', 0);
+                const walkValue = walkBase * walk.multiplier + walk.flat;
+                const runValue = runBase * run.multiplier + run.flat;
+                document.getElementById('appliedWalk').textContent =
+                    `Walk — base: ${walkBase.toFixed(2)} · final: ${walkValue.toFixed(2)} · ${formatStars(getStars(walkValue, statTables.walk))}`;
+                document.getElementById('appliedRun').textContent =
+                    `Run — base: ${runBase.toFixed(2)} · final: ${runValue.toFixed(2)} · ${formatStars(getStars(runValue, statTabl

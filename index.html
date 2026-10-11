@@ -5,50 +5,563 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Calculadora de Stats - Dandy's World</title>
 <style>
-:root{--bg:#100d1c;--card:#1b1730;--panel:#25203e;--yellow:#ffd166;--cyan:#55e6d1;--text:#fff;--muted:#b7b2d0;--border:#443760}*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:20px;display:flex;justify-content:center;background:radial-gradient(ellipse at top left,#30204b,transparent 45%),radial-gradient(ellipse at bottom right,#13383d,transparent 38%),var(--bg);color:var(--text);font-family:Segoe UI,Tahoma,sans-serif}.app{width:100%;max-width:540px}.card{padding:24px;background:var(--card);border:2px solid var(--border);border-radius:14px;box-shadow:0 12px 36px #0007}h1,h2{color:var(--yellow);text-align:center}h1{font-size:1.5rem;margin:0 0 22px}h2{font-size:1.2rem}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:18px}button,select,input{font:inherit}.tab,.action{border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--muted);cursor:pointer}.tab{padding:10px 5px}.tab.active{color:var(--yellow);border-color:var(--yellow)}.group{margin:0 0 14px}label{display:block;margin:0 0 5px;color:var(--muted);font-size:.9rem}select,input{width:100%;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:white}select:focus,input:focus{outline:2px solid var(--cyan)}.stars{display:flex;justify-content:space-around;margin:8px 0 16px;padding:7px;background:var(--panel);border:1px solid var(--border);border-radius:8px}.star{padding:0 5px;border:0;background:none;color:#625a78;font-size:2rem;cursor:pointer}.star.active,.star:hover{color:var(--yellow)}.action{width:100%;padding:10px;margin-top:8px}.action:hover{color:var(--cyan);border-color:var(--cyan)}.result,.panel{margin-top:18px;padding:16px;border:1px solid var(--yellow);border-radius:9px;background:var(--panel);text-align:center}.panel{border-color:var(--border);text-align:left}.big{color:var(--yellow);font-size:1.6rem;font-weight:bold}.result-item{margin-top:12px}.summary{margin-top:14px}.summary p,.panel p{color:var(--muted)}.entry,.stat-card{margin:10px 0;padding:12px;border:1px solid var(--border);border-radius:8px;color:var(--muted)}.entry button{margin-top:8px;color:#ffb3b3}.stat-card strong{display:block;color:var(--yellow);margin-bottom:8px}.stat-card span{display:block;margin:5px 0;color:var(--muted)}[hidden]{display:none!important}@media(max-width:480px){body{padding:10px}.card{padding:18px 14px}h1{font-size:1.3rem}.tabs{gap:4px}.tab{font-size:.78rem;padding:9px 3px}.star{font-size:1.8rem}}
+:root {
+  --bg: #100d1c;
+  --card: #1b1730;
+  --panel: #25203e;
+  --yellow: #ffd166;
+  --cyan: #55e6d1;
+  --text: #fff;
+  --muted: #b7b2d0;
+  --border: #443760;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+}
+
+.app {
+  width: 100%;
+  max-width: 600px;
+}
+
+.card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+h1 {
+  margin: 0 0 24px;
+  font-size: 28px;
+  color: var(--yellow);
+  text-align: center;
+}
+
+h2 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  color: var(--cyan);
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: var(--cyan);
+}
+
+.tab.active {
+  color: var(--yellow);
+  border-bottom-color: var(--yellow);
+}
+
+.group {
+  margin-bottom: 20px;
+}
+
+.group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+select,
+input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+select:focus,
+input[type="number"]:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(85, 230, 209, 0.1);
+}
+
+.stars {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.star {
+  width: 40px;
+  height: 40px;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--yellow);
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.star:hover {
+  background-color: var(--yellow);
+  color: var(--card);
+}
+
+.star.selected {
+  background-color: var(--cyan);
+  color: var(--card);
+  border-color: var(--cyan);
+}
+
+.action {
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px;
+  background: linear-gradient(135deg, var(--cyan), #00d4aa);
+  border: none;
+  border-radius: 6px;
+  color: var(--card);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(85, 230, 209, 0.3);
+}
+
+.action:active {
+  transform: translateY(0);
+}
+
+.action:last-child {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  margin-top: 8px;
+}
+
+.result {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.big {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--yellow);
+  margin: 12px 0;
+}
+
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+}
+
+.modifier-item {
+  padding: 12px;
+  background-color: var(--panel);
+  border-left: 3px solid var(--cyan);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modifier-item button {
+  padding: 6px 12px;
+  background-color: #ff6b6b;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modifier-item button:hover {
+  background-color: #ff5252;
+}
+
+.empty-message {
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+  padding: 16px;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .tabs {
+    margin-bottom: 16px;
+  }
+
+  .tab {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+}
 </style>
 </head>
 <body>
-<main class="app"><section class="card" aria-labelledby="title">
-<h1 id="title">Calculadora de Stats</h1>
-<nav class="tabs" role="tablist" aria-label="Secciones">
-<button class="tab active" role="tab" aria-selected="true" data-panel="calculator">Calculadora</button><button class="tab" role="tab" aria-selected="false" data-panel="values">Valores aplicados</button><button class="tab" role="tab" aria-selected="false" data-panel="chosen">Estrellas elegidas</button>
-</nav>
-<section id="calculator" role="tabpanel">
-<div class="group"><label for="stat">Selecciona estadística:</label><select id="stat"><option value="extraction">Extraction Speed</option><option value="movement">Movement Speed (Walk + Run)</option><option value="skillcheck">Skill Check Size</option><option value="stamina">Stamina</option><option value="stealth">Stealth</option></select></div>
-<label>Nivel objetivo (1–5 estrellas):</label><div class="stars" id="starPicker" aria-label="Nivel de estrellas"></div>
-<div class="group" id="singleBase"><label for="base">Valor base del Toon:</label><input id="base" type="number" step="0.01" value="1"></div>
-<div class="group" id="moveBase" hidden><label for="walkBase">Velocidad base Walk:</label><input id="walkBase" type="number" step="0.1" value="15"><label for="runBase" style="margin-top:10px">Velocidad base Run:</label><input id="runBase" type="number" step="0.1" value="25"></div>
-<div class="group" id="moveTarget" hidden><label for="target">Aplicar modificadores a:</label><select id="target"><option value="both">Walk y Run</option><option value="walk">Solo Walk</option><option value="run">Solo Run</option><option value="none">Ninguno</option></select></div>
-<div class="group"><label for="multiplier">Multiplicador (×):</label><input id="multiplier" type="number" step="0.01" value="1"></div>
-<div class="group"><label for="percent">Modificador porcentaje (%):</label><input id="percent" type="number" step="0.1" value="0"></div>
-<div class="group"><label for="flat">Valor plano (+ / −):</label><input id="flat" type="number" step="1" value="0"></div>
-<button class="action" id="add">Añadir modificador</button><button class="action" id="clear">Quitar todos los modificadores</button>
-<div class="result" aria-live="polite"><div id="singleResult">Valor calculado final:<div class="big" id="final">1.00</div><div id="equiv"></div></div><div id="moveResult" hidden>Velocidades calculadas:<div class="result-item"><strong>Walk:</strong> <span class="big" id="walkFinal"></span><div id="walkStars"></div></div><div class="result-item"><strong>Run:</strong> <span class="big" id="runFinal"></span><div id="runStars"></div></div><details class="summary"><summary>Ver modificadores de Walk y Run</summary><p id="walkSummary"></p><p id="runSummary"></p></details></div></div>
-</section>
-<section id="values" class="panel" role="tabpanel" hidden><h2>Valores aplicados</h2><p id="context"></p><div id="modifierList"></div><p id="applied"></p><button class="action" id="clearValues">Quitar todos los modificadores</button></section>
-<section id="chosen" class="panel" role="tabpanel" hidden><h2>Estrellas elegidas</h2><p>Tu selección para cada estadística:</p><div id="chosenList"></div></section>
-</section></main>
+<main class="app">
+  <section class="card" aria-labelledby="title">
+    <h1 id="title">Calculadora de Stats</h1>
+    
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button class="tab active" role="tab" aria-selected="true" data-panel="calculator">Calculadora</button>
+      <button class="tab" role="tab" aria-selected="false" data-panel="values">Valores aplicados</button>
+      <button class="tab" role="tab" aria-selected="false" data-panel="chosen">Estrellas elegidas</button>
+    </nav>
+
+    <!-- Calculadora -->
+    <section id="calculator" class="panel active" role="tabpanel">
+      <div class="group">
+        <label for="stat">Selecciona estadística:</label>
+        <select id="stat">
+          <option value="extraction">Extraction Speed</option>
+          <option value="movement">Movement Speed (Walk + Run)</option>
+          <option value="skillcheck">Skill Check Size</option>
+          <option value="stamina">Stamina</option>
+          <option value="stealth">Stealth</option>
+        </select>
+      </div>
+
+      <div class="group">
+        <label>Nivel objetivo (1–5 estrellas):</label>
+        <div class="stars" id="starPicker" aria-label="Nivel de estrellas"></div>
+      </div>
+
+      <div class="group" id="singleBase">
+        <label for="base">Valor base del Toon:</label>
+        <input id="base" type="number" step="0.01" value="1">
+      </div>
+
+      <div class="group" id="moveBase" hidden>
+        <label for="walkBase">Velocidad base Walk:</label>
+        <input id="walkBase" type="number" step="0.1" value="15">
+        <label for="runBase" style="margin-top: 10px">Velocidad base Run:</label>
+        <input id="runBase" type="number" step="0.1" value="25">
+      </div>
+
+      <div class="group" id="moveTarget" hidden>
+        <label for="target">Aplicar modificadores a:</label>
+        <select id="target">
+          <option value="both">Walk y Run</option>
+          <option value="walk">Solo Walk</option>
+          <option value="run">Solo Run</option>
+        </select>
+      </div>
+
+      <div class="group">
+        <label for="multiplier">Multiplicador (×):</label>
+        <input id="multiplier" type="number" step="0.01" value="1">
+      </div>
+
+      <div class="group">
+        <label for="percent">Modificador porcentaje (%):</label>
+        <input id="percent" type="number" step="0.1" value="0">
+      </div>
+
+      <div class="group">
+        <label for="flat">Valor plano (+ / −):</label>
+        <input id="flat" type="number" step="1" value="0">
+      </div>
+
+      <button class="action" id="add">Añadir modificador</button>
+      <button class="action" id="clear">Quitar todos los modificadores</button>
+
+      <div class="result" aria-live="polite">
+        <div id="singleResult">
+          Valor calculado final:
+          <div class="big" id="final">1.00</div>
+          <div id="equiv"></div>
+        </div>
+        <div id="moveResult" hidden>
+          Velocidades calculadas:
+          <div>Walk: <span class="big" id="walkFinal">15.00</span></div>
+          <div id="walkStars"></div>
+          <div style="margin-top: 12px">Run: <span class="big" id="runFinal">25.00</span></div>
+          <div id="runStars"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Valores Aplicados -->
+    <section id="values" class="panel" role="tabpanel">
+      <h2>Valores aplicados</h2>
+      <p id="context"></p>
+      <div id="modifierList"></div>
+      <p id="applied"></p>
+      <button class="action" id="clearValues">Quitar todos los modificadores</button>
+    </section>
+
+    <!-- Estrellas Elegidas -->
+    <section id="chosen" class="panel" role="tabpanel">
+      <h2>Estrellas elegidas</h2>
+      <p>Tu selección para cada estadística:</p>
+      <div id="chosenList"></div>
+    </section>
+  </section>
+</main>
+
 <script>
-const tables={extraction:[.75,.85,1,1.2,1.5],walk:[10,12.5,15,17.5,20],run:[20,22.5,25,27.5,30],skillcheck:[50,100,150,200,250],stamina:[100,125,150,175,200],stealth:[0,5,10,15,20]};
-const labels={extraction:'Extraction Speed',movement:'Movement Speed',skillcheck:'Skill Check Size',stamina:'Stamina',stealth:'Stealth'};
-const chosen={extraction:3,movement:3,skillcheck:3,stamina:3,stealth:3};let modifiers=[];
-const $=id=>document.getElementById(id), number=(id,def=0)=>{const n=Number($(id).value);return Number.isFinite(n)?n:def};
-function stars(n){return '★'.repeat(n)+'☆'.repeat(5-n)+` (${n} estrella${n===1?'':'s'})`}
-function rating(value,list){let result=1;list.forEach((v,i)=>{if(value>=v)result=i+1});return result}
-function effect(type,target){return modifiers.filter(m=>m.stat===type&&(type!=='movement'||m.target==='both'||m.target===target)).reduce((a,m)=>({mult:a.mult*m.mult*(1+m.percent/100),flat:a.flat+m.flat}),{mult:1,flat:0})}
-function renderChosen(){const rows=[['Extraction Speed','extraction','extraction'],['Movement Speed — Walk','walk','movement'],['Movement Speed — Run','run','movement'],['Skill Check Size','skillcheck','skillcheck'],['Stamina','stamina','stamina'],['Stealth','stealth','stealth']];$('chosenList').innerHTML=rows.map(([name,key,selection])=>`<div class="stat-card"><strong>${name}</strong><span>Estrellas elegidas: ${stars(chosen[selection])}</span><span>Valor: ${tables[key][chosen[selection]-1]}</span></div>`).join('')}
-function renderModifiers(){const list=$('modifierList');list.replaceChildren();if(!modifiers.length){list.textContent='Todavía no has añadido modificadores.';return}modifiers.forEach((m,i)=>{const el=document.createElement('div');el.className='entry';el.textContent=`#${i+1} · ${m.label} · ×${m.mult.toFixed(2)} · ${m.percent}% · ${m.flat>=0?'+':''}${m.flat} `;const btn=document.createElement('button');btn.className='action';btn.textContent='Quitar este modificador';btn.onclick=()=>{modifiers.splice(i,1);update()};el.append(btn);list.append(el)})}
-function update(){const type=$('stat').value,moving=type==='movement';$('singleBase').hidden=moving;$('moveBase').hidden=!moving;$('moveTarget').hidden=!moving;$('singleResult').hidden=moving;$('moveResult').hidden=!moving;document.querySelectorAll('.star').forEach(b=>b.classList.toggle('active',Number(b.dataset.star)===chosen[type]));
-const one=effect(type),walk=effect('movement','walk'),run=effect('movement','run');
-if(moving){const w=number('walkBase',15)*walk.mult+walk.flat,r=number('runBase',25)*run.mult+run.flat;$('walkFinal').textContent=w.toFixed(2);$('runFinal').textContent=r.toFixed(2);$('walkStars').textContent=stars(rating(w,tables.walk));$('runStars').textContent=stars(rating(r,tables.run));$('walkSummary').textContent=`Walk: ×${walk.mult.toFixed(2)}, ${walk.flat>=0?'+':''}${walk.flat}`;$('runSummary').textContent=`Run: ×${run.mult.toFixed(2)}, ${run.flat>=0?'+':''}${run.flat}`;$('context').textContent=`Destino para el próximo modificador: ${$('target').selectedOptions[0].text}.`;const wbase=number('walkBase',15),rbase=number('runBase',25);$('applied').textContent=`Walk ${wbase.toFixed(2)} → ${w.toFixed(2)} · Run ${rbase.toFixed(2)} → ${r.toFixed(2)}`}
-else{const base=number('base',1),value=base*one.mult+one.flat;$('final').textContent=value.toFixed(2);$('equiv').textContent=`Equivale a: ${stars(rating(value,tables[type]))}`;$('context').textContent=`Estadística seleccionada: ${labels[type]}.`;$('applied').textContent=`Base: ${base.toFixed(2)} → final: ${value.toFixed(2)} · ${stars(rating(value,tables[type]))}`}
-renderModifiers();renderChosen()}
-for(let n=1;n<=5;n++){const b=document.createElement('button');b.type='button';b.className='star';b.dataset.star=n;b.setAttribute('aria-label',`${n} estrellas`);b.textContent='★';b.onclick=()=>{chosen[$('stat').value]=n;update()};$('starPicker').append(b)}
-document.querySelectorAll('.tab').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.tab').forEach(t=>{const active=t===btn;t.classList.toggle('active',active);t.setAttribute('aria-selected',active)});['calculator','values','chosen'].forEach(id=>$(id).hidden=id!==btn.dataset.panel)});
-['stat','target','base','walkBase','runBase'].forEach(id=>$(id).addEventListener('input',update));
-$('add').onclick=()=>{modifiers.push({stat:$('stat').value,label:labels[$('stat').value],target:$('target').value,mult:number('multiplier',1),percent:number('percent'),flat:number('flat')});update()};
-function clear(){modifiers=[];update()}$('clear').onclick=clear;$('clearValues').onclick=clear;update();
+const tables = {
+  extraction: [0.75, 0.85, 1, 1.2, 1.5],
+  walk: [10, 12.5, 15, 17.5, 20],
+  run: [20, 22.5, 25, 27.5, 30],
+  skillcheck: [50, 100, 150, 200, 250],
+  stamina: [100, 125, 150, 175, 200],
+  stealth: [0, 5, 10, 15, 20]
+};
+
+const labels = {
+  extraction: 'Extraction Speed',
+  movement: 'Movement Speed',
+  skillcheck: 'Skill Check Size',
+  stamina: 'Stamina',
+  stealth: 'Stealth'
+};
+
+const chosen = {
+  extraction: 3,
+  movement: 3,
+  skillcheck: 3,
+  stamina: 3,
+  stealth: 3
+};
+
+let modifiers = [];
+
+const $ = id => document.getElementById(id);
+const number = (id, def = 0) => {
+  const n = Number($(id).value);
+  return Number.isFinite(n) ? n : def;
+};
+
+function stars(n) {
+  return '★'.repeat(n) + '☆'.repeat(5 - n) + ` (${n} estrella${n === 1 ? '' : 's'})`;
+}
+
+function rating(value, list) {
+  let result = 1;
+  list.forEach((v, i) => {
+    if (value >= v) result = i + 1;
+  });
+  return result;
+}
+
+function effect(type, target) {
+  return modifiers
+    .filter(m => m.stat === type && (type !== 'movement' || m.target === 'both' || m.target === target))
+    .reduce(
+      (a, m) => ({
+        mult: a.mult * m.mult * (1 + m.percent / 100),
+        flat: a.flat + m.flat
+      }),
+      { mult: 1, flat: 0 }
+    );
+}
+
+function renderChosen() {
+  const rows = [
+    ['Extraction Speed', 'extraction', 'extraction'],
+    ['Movement Speed — Walk', 'walk', 'movement'],
+    ['Movement Speed — Run', 'run', 'movement'],
+    ['Skill Check Size', 'skillcheck', 'skillcheck'],
+    ['Stamina', 'stamina', 'stamina'],
+    ['Stealth', 'stealth', 'stealth']
+  ];
+
+  const list = $('chosenList');
+  list.replaceChildren();
+
+  rows.forEach(([label, key, stat]) => {
+    const star = chosen[stat];
+    const tableKey = key === 'walk' || key === 'run' ? key : stat;
+    const value = tables[tableKey][star - 1];
+
+    const row = document.createElement('div');
+    row.style.cssText = 'padding: 8px; margin-bottom: 8px; background-color: var(--panel); border-radius: 4px;';
+    row.innerHTML = `
+      <div style="font-weight: 500; margin-bottom: 4px;">${label}</div>
+      <div style="color: var(--muted); font-size: 12px;">
+        ${stars(star)} → ${value.toFixed(2)}
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function renderModifiers() {
+  const list = $('modifierList');
+  list.replaceChildren();
+
+  if (!modifiers.length) {
+    list.innerHTML = '<div class="empty-message">Todavía no has añadido modificadores.</div>';
+    return;
+  }
+
+  modifiers.forEach((m, i) => {
+    const row = document.createElement('div');
+    row.className = 'modifier-item';
+    row.innerHTML = `
+      <div>
+        <div style="font-weight: 500;">${m.label}</div>
+        <div style="font-size: 12px; color: var(--muted);">
+          × ${m.mult.toFixed(2)} ${m.percent > 0 ? '+' : ''}${m.percent}% ${m.flat > 0 ? '+' : ''}${m.flat}
+        </div>
+      </div>
+      <button onclick="modifiers.splice(${i}, 1); update()">Quitar</button>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function update() {
+  const type = $('stat').value;
+  const moving = type === 'movement';
+
+  $('singleBase').hidden = moving;
+  $('moveBase').hidden = !moving;
+  $('moveTarget').hidden = !moving;
+  $('singleResult').hidden = moving;
+  $('moveResult').hidden = !moving;
+
+  const one = effect(type);
+  const walk = effect('movement', 'walk');
+  const run = effect('movement', 'run');
+
+  if (moving) {
+    const w = number('walkBase', 15) * walk.mult + walk.flat;
+    const r = number('runBase', 25) * run.mult + run.flat;
+    $('walkFinal').textContent = w.toFixed(2);
+    $('runFinal').textContent = r.toFixed(2);
+    $('walkStars').textContent = stars(rating(w, tables.walk));
+    $('runStars').textContent = stars(rating(r, tables.run));
+  } else {
+    const base = number('base', 1);
+    const value = base * one.mult + one.flat;
+    $('final').textContent = value.toFixed(2);
+    $('equiv').textContent = `Equivale a: ${stars(rating(value, tables[type]))}`;
+    $('context').textContent = `Valor base del ${labels[type]}: ${base.toFixed(2)}`;
+  }
+
+  renderModifiers();
+  renderChosen();
+}
+
+// Renderizar selector de estrellas
+for (let n = 1; n <= 5; n++) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'star';
+  b.dataset.star = n;
+  b.setAttribute('aria-label', `${n} estrellas`);
+  b.textContent = '★';
+  b.onclick = () => {
+    chosen[$('stat').value] = n;
+    renderChosen();
+  };
+  $('starPicker').appendChild(b);
+}
+
+// Manejo de pestañas
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => {
+      const active = t === btn;
+      t.classList.toggle('active', active);
+      t.setAttribute('aria-selected', active);
+    });
+
+    const panelId = btn.dataset.panel;
+    document.querySelectorAll('.panel').forEach(p => {
+      p.classList.toggle('active', p.id === panelId);
+    });
+  };
+});
+
+// Event listeners
+['stat', 'target', 'base', 'walkBase', 'runBase'].forEach(id => {
+  $(id).addEventListener('input', update);
+});
+
+$('add').onclick = () => {
+  modifiers.push({
+    stat: $('stat').value,
+    label: labels[$('stat').value],
+    target: $('target').value,
+    mult: number('multiplier', 1),
+    percent: number('percent'),
+    flat: number('flat')
+  });
+  update();
+};
+
+function clear() {
+  modifiers = [];
+  update();
+}
+
+$('clear').onclick = clear;
+$('clearValues').onclick = clear;
+
+update();
 </script>
 </body>
-                                                                                         </html>                                                                                        
+</html>
